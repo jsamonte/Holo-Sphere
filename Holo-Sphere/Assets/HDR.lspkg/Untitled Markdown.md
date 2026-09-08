@@ -1,0 +1,1 @@
+HDR Effect enhances your AR experience by delivering sharper, more detailed, and visually balanced results in real time. It improves lighting, boosts contrast, and reveals fine details even in challenging conditions. This effect creates a clean, high-quality, and engaging look, making visuals appear more polished and camera-ready while increasing interaction and shareability.

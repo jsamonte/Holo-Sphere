@@ -1,0 +1,37 @@
+- !<NativePackageDescriptor/abfdff6b-3310-42b2-b733-31fd1f579bae>
+  PackagePath: ""
+  StudioVersion:
+    major: 5
+    minor: 15
+    patch: 0
+    build: 25101318
+    type: Unset
+    buildFlavor: ""
+    timestamp: 0
+    commit: ""
+  Description: Iridescence Material The color map on this material is customizable with any 512x3 ramp texture. This material is similar to Soap Bubble material but comes with texture input for opacity.
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  VersionMajor: 1
+  VersionMinor: 0
+  VersionPatch: 0
+  UpdateCheckpoint: 76
+  ExportUid: 9e91280c-c13d-487e-8a59-cb5af2132b24
+  ComponentUid: 2e1697fe-b479-4bc1-94b3-9951fc467b33
+  PackagePolicy: CanBeUnpackedTransparent
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  Instantiable: !<reference> 00000000-0000-0000-0000-000000000000
+  AssetLibraryDependencyStructure: !<AssetLibraryDependencyStructure>
+    Name: ""
+    AssetId: ""
+    Hash: ""
+    Version:
+      major: 0
+      minor: 0
+      patch: 0
+      build: 0

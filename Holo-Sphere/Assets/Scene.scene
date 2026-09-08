@@ -4,6 +4,8 @@
     - !<own> 00000000-0000-0065-0000-000000000064
     - !<own> 0005641c-028d-459a-0000-000000014b4d
     - !<own> 126acc4c-5351-47f5-99eb-69ab162741e7
+    - !<own> f4e9f6d6-b5d4-4e82-89ff-1f494b035dce
+    - !<own> b1f6363e-3a3a-4c0b-aebf-e81b80607adf
   layers: !<Layers/267ee9a7-aff2-4f9d-9a49-f71214747d03>
     userLayers:
       - |
@@ -260,6 +262,26 @@
   ScriptTypes:
     "":
       {}
+- !<RenderMeshVisual/03586809-3815-4cc5-a8e4-cef6751f9dc1>
+  PrefabRemaps:
+    []
+  Name: Render Mesh Visual
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> a2908d7b-3181-4290-9d88-d94d852ed1d1
+  Mesh: !<reference> 383953da-46e7-4dba-b60d-a7b0f492e050
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
 - !<RenderMeshVisual/071b3388-948d-4f0f-89e7-b41bd3bbebbb>
   PrefabRemaps:
     []
@@ -947,8 +969,6 @@
   ScriptInputsDefault:
     indirectDragThreshold: true
     _drawDebug: true
-    directColliderEnterRadius: true
-    directColliderExitRadius: true
     directDragThreshold: true
     forcePokeOnNonDominantPalmProximity: true
   ScriptTypesDefault:
@@ -958,8 +978,8 @@
       indirectDragThreshold: !<float> 10.000000
       _drawDebug: false
       handType: left
-      directColliderEnterRadius: !<float> 1.000000
-      directColliderExitRadius: 1.500000
+      directColliderEnterRadius: 3.500000
+      directColliderExitRadius: !<float> 5.000000
       directDragThreshold: !<float> 3.000000
       forcePokeOnNonDominantPalmProximity: false
   ScriptTypes:
@@ -1186,8 +1206,6 @@
     indirectDragThreshold: true
     _drawDebug: true
     handType: true
-    directColliderEnterRadius: true
-    directColliderExitRadius: true
     directDragThreshold: true
     forcePokeOnNonDominantPalmProximity: true
   ScriptTypesDefault:
@@ -1197,8 +1215,8 @@
       indirectDragThreshold: !<float> 10.000000
       _drawDebug: false
       handType: right
-      directColliderEnterRadius: !<float> 1.000000
-      directColliderExitRadius: 1.500000
+      directColliderEnterRadius: 3.500000
+      directColliderExitRadius: !<float> 5.000000
       directDragThreshold: !<float> 3.000000
       forcePokeOnNonDominantPalmProximity: false
   ScriptTypes:
@@ -1470,6 +1488,21 @@
     - !<own> 4643f2c7-af4b-4a28-8c13-1542bcd5f739
   Components:
     []
+- !<SceneObject/8ef06853-9eb5-4cf2-a4c4-8181d87c8cff>
+  PrefabRemaps:
+    []
+  Name: HDR
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: -40.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> f1128767-cdd9-4ea9-8974-9e83efd8c6b5
 - !<SceneObject/8f215cf8-6faa-4338-a843-9eed0e5c8b14>
   PrefabRemaps:
     []
@@ -1612,6 +1645,42 @@
     - !<own> 4ef3fe94-c5e8-46aa-9409-3f315c7a4853
   Components:
     []
+- !<ScriptComponent/9b8f6c52-cc96-45dc-a3df-08eb4e42bae8>
+  PrefabRemaps:
+    []
+  Name: Interactable
+  Enabled: true
+  ScriptAsset: !<reference> 652e631a-22d0-4941-9f74-2943df59f34c
+  ScriptInputsDefault:
+    targetingVisual: true
+    ignoreInteractionPlane: true
+    keepHoverOnTrigger: true
+    isScrollable: true
+    allowMultipleInteractors: true
+    enablePokeDirectionality: true
+    acceptableXDirections: true
+    acceptableYDirections: true
+    acceptableZDirections: true
+    useFilteredPinch: true
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      targetingMode: !<float> 1.000000
+      targetingVisual: !<float> 1.000000
+      ignoreInteractionPlane: false
+      keepHoverOnTrigger: false
+      enableInstantDrag: true
+      isScrollable: false
+      allowMultipleInteractors: true
+      enablePokeDirectionality: false
+      acceptableXDirections: !<float> 0.000000
+      acceptableYDirections: !<float> 0.000000
+      acceptableZDirections: !<float> 1.000000
+      useFilteredPinch: false
+  ScriptTypes:
+    "":
+      {}
 - !<SceneObject/9ea1fafe-fd0e-4f13-ad1b-3ad6995a8685>
   PrefabRemaps:
     []
@@ -1657,6 +1726,24 @@
     - !<own> a09bb5cd-a685-4c16-9d14-f0e7b06f33ad
   Components:
     []
+- !<ColliderComponent/a07e3772-c86c-45cb-892b-bc3caf4b0e38>
+  PrefabRemaps:
+    []
+  Name: Physics Collider
+  Enabled: true
+  Shape: !<Sphere>
+    FitVisual: false
+    Radius: 0.750000
+  Matter: !<reference> 00000000-0000-0000-0000-000000000000
+  Filter: !<reference> 00000000-0000-0000-0000-000000000000
+  OverlapFilter: !<reference> 00000000-0000-0000-0000-000000000000
+  WorldSettings: !<reference> 00000000-0000-0000-0000-000000000000
+  EnableSmoothing: false
+  PositionTension: 30.000000
+  RotationTension: 30.000000
+  ForceCompound: false
+  Intangible: false
+  ShowCollider: true
 - !<SceneObject/a09bb5cd-a685-4c16-9d14-f0e7b06f33ad>
   PrefabRemaps:
     []
@@ -1856,7 +1943,6 @@
   ScriptInputsDefault:
     indirectDragThreshold: true
     _drawDebug: true
-    mouseTargetingMode: true
     moveInDepth: true
     moveInDepthAmount: true
   ScriptTypesDefault:
@@ -1865,9 +1951,55 @@
     "":
       indirectDragThreshold: !<float> 3.000000
       _drawDebug: false
-      mouseTargetingMode: !<float> 2.000000
+      mouseTargetingMode: !<float> 1.000000
       moveInDepth: false
       moveInDepthAmount: !<float> 5.000000
+  ScriptTypes:
+    "":
+      {}
+- !<ScriptComponent/b065f53d-144a-457a-8a23-aa0ca86012f7>
+  PrefabRemaps:
+    []
+  Name: InteractableManipulation
+  Enabled: true
+  ScriptAsset: !<reference> 664b556b-1946-4c2c-866a-e675b4e86006
+  ScriptInputsDefault:
+    manipulateRootSceneObject: true
+    enableTranslation: true
+    minimumScaleFactor: true
+    maximumScaleFactor: true
+    enableStretchZ: true
+    zStretchFactorMin: true
+    zStretchFactorMax: true
+    useFilter: true
+    showTranslationProperties: true
+    _enableXTranslation: true
+    _enableYTranslation: true
+    _enableZTranslation: true
+    showRotationProperties: true
+    _rotationAxis: true
+    isSynced: true
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      manipulateRootSceneObject: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      enableTranslation: true
+      enableRotation: false
+      enableScale: false
+      minimumScaleFactor: 0.250000
+      maximumScaleFactor: !<float> 20.000000
+      enableStretchZ: true
+      zStretchFactorMin: !<float> 1.000000
+      zStretchFactorMax: !<float> 12.000000
+      useFilter: true
+      showTranslationProperties: false
+      _enableXTranslation: true
+      _enableYTranslation: true
+      _enableZTranslation: true
+      showRotationProperties: false
+      _rotationAxis: All
+      isSynced: false
   ScriptTypes:
     "":
       {}
@@ -1902,6 +2034,24 @@
   ScriptTypes:
     "":
       {}
+- !<SceneObject/b1f6363e-3a3a-4c0b-aebf-e81b80607adf>
+  PrefabRemaps:
+    - 8ef06853-9eb5-4cf2-a4c4-8181d87c8cff: 827b5d6b-92e7-4d81-4130-d30bb6ee5502
+    - b1f6363e-3a3a-4c0b-aebf-e81b80607adf: bad3c54c-bba4-4151-6844-870f602f0aaa
+    - b99768cd-df88-4c0f-9c58-969de8f19f86: 6f496226-9d33-470d-49f7-dcfef977ccd7
+    - f1128767-cdd9-4ea9-8974-9e83efd8c6b5: 1d227785-156f-4b91-7744-fbb503f78d0c
+  Name: HDR Effect
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 40.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    - !<own> 8ef06853-9eb5-4cf2-a4c4-8181d87c8cff
+  Components:
+    - !<own> b99768cd-df88-4c0f-9c58-969de8f19f86
 - !<SceneObject/b554b9e7-9dd0-4c95-a6c7-3e192546f085>
   PrefabRemaps:
     []
@@ -1950,6 +2100,20 @@
     - !<own> c989290c-728b-4d28-a4aa-33e965c8aaeb
   Components:
     []
+- !<PostEffectVisual/b99768cd-df88-4c0f-9c58-969de8f19f86>
+  PrefabRemaps:
+    []
+  Name: Post Effect
+  Enabled: true
+  RenderOrder: 2
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> c934d49e-50d9-41f9-855e-1ddec2c63b88
 - !<SceneObject/b9ae69a6-1492-40d0-bbf3-c36ae182c3b0>
   PrefabRemaps:
     []
@@ -2524,6 +2688,20 @@
     - !<own> 2f79e483-9cbe-4919-ae17-cbc474bb6c1b
   Components:
     []
+- !<PostEffectVisual/f1128767-cdd9-4ea9-8974-9e83efd8c6b5>
+  PrefabRemaps:
+    []
+  Name: Post Effect
+  Enabled: true
+  RenderOrder: 3
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 9dabdda1-ec75-4dbb-9412-d1d6e721060c
 - !<SceneObject/f3d980c9-758a-4e51-b07d-855f3e38f33b>
   PrefabRemaps:
     []
@@ -2554,6 +2732,24 @@
     - !<own> a7e21055-a104-43f1-a3f4-b3e72a819c21
   Components:
     []
+- !<SceneObject/f4e9f6d6-b5d4-4e82-89ff-1f494b035dce>
+  PrefabRemaps:
+    []
+  Name: Holo Sphere
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: -40.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 10.050000, y: 10.050000, z: 10.050000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 03586809-3815-4cc5-a8e4-cef6751f9dc1
+    - !<own> a07e3772-c86c-45cb-892b-bc3caf4b0e38
+    - !<own> 9b8f6c52-cc96-45dc-a3df-08eb4e42bae8
+    - !<own> b065f53d-144a-457a-8a23-aa0ca86012f7
 - !<SceneObject/f949e255-7e6a-4b08-a07e-3147a8f452f1>
   PrefabRemaps:
     []
