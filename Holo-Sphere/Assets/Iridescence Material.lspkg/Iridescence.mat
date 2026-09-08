@@ -149,7 +149,7 @@
       value: 1.000000
     Port_Opacity_N006:
       typeIdx: 1
-      value: 0.200000
+      value: 0.150000
     Port_RangeMaxA_N049:
       typeIdx: 1
       value: 1.000000
@@ -179,7 +179,7 @@
       value: 1.250000
     intensity:
       typeIdx: 1
-      value: 0.900000
+      value: 0.650000
     iridescenceMap:
       typeIdx: 9
       value:
@@ -194,7 +194,7 @@
         type: Texture2D
     metallic:
       typeIdx: 1
-      value: 0.800000
+      value: 0.970000
     mixAmount:
       typeIdx: 1
       value: 0.000000
@@ -206,7 +206,7 @@
       value: {x: 1.000000, y: 1.000000}
     roughness:
       typeIdx: 1
-      value: 0.280000
+      value: 0.200000
     thinFilmWeight:
       typeIdx: 1
       value: 0.000000
