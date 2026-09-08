@@ -1,0 +1,104 @@
+- !<AssetImportMetadata/aaf59f9f-8c7d-4a09-baa6-79ade6f631c9>
+  ImportedAssetIds:
+    TypeScriptAsset: !<reference> 98a09bb5-0dae-45df-91f7-f255cc19c36b
+  ImporterName: TypeScriptAssetImporter
+  PrimaryAsset: !<reference> 98a09bb5-0dae-45df-91f7-f255cc19c36b
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    TypeScriptAsset: !<own> 7c25f4a7-4eaf-4494-8347-77c117379f2c
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<TypeScriptAssetData/7c25f4a7-4eaf-4494-8347-77c117379f2c>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: 209670a5-2fb8-42f9-a5a0-6b1213fad20c
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    clearOnRelease: false
+    colorA: false
+    colorB: false
+    colorC: false
+    emissivePort: false
+    fadeSharpness: false
+    ghostCount: false
+    ghostEmissive: false
+    ghostLifetime: false
+    ghostMaterial: false
+    ghostMesh: false
+    ghostOpacity: false
+    ghostScale: false
+    mainColorMix: false
+    mainEmissive: false
+    minSpacing: false
+    opacityPort: false
+    restColor: false
+    strobeInterval: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - strobeInterval: 0.060000
+      colorA: !<Vec4> {x: 0.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+      colorB: !<Vec4> {x: 1.000000, y: 0.000000, z: 1.000000, w: 1.000000}
+      colorC: !<Vec4> {x: 1.000000, y: 1.000000, z: 0.000000, w: 1.000000}
+      restColor: !<Vec4> {x: 0.880000, y: 0.890000, z: 0.910000, w: 1.000000}
+      mainColorMix: !<float> 1.000000
+      mainEmissive: 0.600000
+      ghostCount: !<float> 16.000000
+      ghostLifetime: 0.350000
+      ghostOpacity: !<float> 1.000000
+      ghostEmissive: 0.800000
+      fadeSharpness: 1.500000
+      ghostScale: 0.950000
+      minSpacing: 0.200000
+      clearOnRelease: true
+      ghostMesh: !<reference.RenderMesh> 00000000-0000-0000-0000-000000000000
+      ghostMaterial: !<reference.Material> 00000000-0000-0000-0000-000000000000
+      emissivePort: Port_Emissive_N006
+      opacityPort: Port_Opacity_N006
+  ScriptTypes:
+    -
+      {}
+  InputLines:
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Strobe</span>"}'
+    - '// @input float strobeInterval = 0.06 {"label":"Strobe Interval (s)", "hint":"Seconds each colour is held before advancing to the next one. Smaller = faster strobe.", "widget":"slider", "min":0.01, "max":0.5, "step":0.01}'
+    - '// @input vec4 colorA = "{1, 0, 0, 1}" {"label":"Color 1", "widget":"color"}'
+    - '// @input vec4 colorB = "{0, 1, 0, 1}" {"label":"Color 2", "widget":"color"}'
+    - '// @input vec4 colorC = "{0, 0, 1, 1}" {"label":"Color 3", "widget":"color"}'
+    - '// @input vec4 restColor = "{0.88, 0.89, 0.91, 1}" {"label":"Rest Color", "hint":"Colour of the sphere while it is not being grabbed. Silver white by default.", "widget":"color"}'
+    - '// @input float mainColorMix = 1 {"label":"Main Color Mix", "hint":"0 keeps the silver rest colour while pinched, 1 fully replaces it with the strobe colour.", "widget":"slider", "min":0, "max":1, "step":0.05}'
+    - '// @input float mainEmissive = 0.6 {"label":"Main Emissive", "hint":"Emissive brightness added to the main sphere so the strobe reads as a light source rather than a tint.", "widget":"slider", "min":0, "max":4, "step":0.05}'
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Trail</span>"}'
+    - '// @input float ghostCount = 16 {"label":"Ghost Count", "hint":"Size of the afterimage pool. Should be at least Ghost Lifetime / Strobe Interval.", "widget":"slider", "min":3, "max":40, "step":1}'
+    - '// @input float ghostLifetime = 0.35 {"label":"Ghost Lifetime (s)", "hint":"How long each afterimage lingers before it has fully faded out.", "widget":"slider", "min":0.05, "max":2, "step":0.05}'
+    - '// @input float ghostOpacity = 0.35 {"label":"Ghost Opacity", "hint":"Opacity of a freshly spawned afterimage, before it starts fading out.", "widget":"slider", "min":0, "max":1, "step":0.05}'
+    - '// @input float ghostEmissive = 0.8 {"label":"Ghost Emissive", "hint":"Emissive brightness of a freshly spawned afterimage.", "widget":"slider", "min":0, "max":4, "step":0.05}'
+    - '// @input float fadeSharpness = 1.5 {"label":"Fade Sharpness", "hint":"1 is a linear fade. Higher values hold brightness longer then drop off sharply, more strobe than smear.", "widget":"slider", "min":0.25, "max":4, "step":0.25}'
+    - '// @input float ghostScale = 0.95 {"label":"Ghost Scale", "hint":"Size of an afterimage relative to the main sphere.", "widget":"slider", "min":0.1, "max":1.5, "step":0.05}'
+    - "// @input float minSpacing = 0.2 {\"label\":\"Min Spacing\", \"hint\":\"Minimum travel between afterimages, as a fraction of the sphere's world scale. Stops ghosts piling up when the sphere is pinched but held still. Set to 0 to emit on every flash.\", \"widget\":\"slider\", \"min\":0, \"max\":2, \"step\":0.05}"
+    - '// @input bool clearOnRelease = true {"label":"Clear On Release", "hint":"Hide all afterimages the instant the pinch is released, instead of letting the trail finish fading."}'
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Advanced</span>"}'
+    - "// @input Asset.RenderMesh ghostMesh {\"label\":\"Ghost Mesh\", \"hint\":\"Mesh used for the afterimages. Leave empty to reuse the main sphere's own mesh.\"}"
+    - "// @input Asset.Material ghostMaterial {\"label\":\"Ghost Material\", \"hint\":\"Material used for the afterimages. Leave empty to clone the main sphere's own material.\"}"
+    - "// @input string emissivePort = \"Port_Emissive_N006\" {\"label\":\"Emissive Port\", \"hint\":\"Name of the emissive (vec3) port on the sphere's material. Leave empty to skip emissive.\"}"
+    - "// @input string opacityPort = \"Port_Opacity_N006\" {\"label\":\"Opacity Port\", \"hint\":\"Name of the opacity (float) port on the sphere's material. Leave empty to skip fading by opacity.\"}"

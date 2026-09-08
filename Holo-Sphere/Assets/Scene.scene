@@ -165,10 +165,10 @@
   UseEnvMapFromCamera: false
   EnvMapFromCameraMode: Auto
   EstimationSharpness: 1.000000
-  EnvMapExposure: 0.550000
+  EnvMapExposure: 0.300000
   EnvMapRotation: 0.000000
-  DiffuseEnvTexture: !<reference> 2013a19b-93c1-4f21-b7ea-876a33550c7b
-  SpecularEnvTexture: !<reference> d795fd46-e16b-4cb9-8dfb-4ef227298f7a
+  DiffuseEnvTexture: !<reference> 6c63b7a3-e1c4-42e9-a8ab-85edab01273e
+  SpecularEnvTexture: !<reference> 6c63b7a3-e1c4-42e9-a8ab-85edab01273e
   Color: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
   ShadowColor: {x: 0.000000, y: 0.000000, z: 0.000000, w: 1.000000}
   DynamicEnvInputTexture: !<reference> 00000000-0000-0000-0000-000000000000
@@ -1363,6 +1363,52 @@
     - !<own> 0fcd2a16-adcd-4a7a-9ebe-7dead651c1fa
   Components:
     []
+- !<ScriptComponent/7d945fa3-be50-4cd3-94d3-3fa43e4e03a2>
+  PrefabRemaps:
+    []
+  Name: StrobeGhostTrail
+  Enabled: true
+  ScriptAsset: !<reference> 98a09bb5-0dae-45df-91f7-f255cc19c36b
+  ScriptInputsDefault:
+    strobeInterval: true
+    mainColorMix: true
+    mainEmissive: true
+    ghostCount: true
+    ghostLifetime: true
+    ghostEmissive: true
+    fadeSharpness: true
+    ghostScale: true
+    minSpacing: true
+    clearOnRelease: true
+    ghostMesh: true
+    ghostMaterial: true
+    emissivePort: true
+    opacityPort: true
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      strobeInterval: 0.060000
+      colorA: !<Vec4> {x: 1.000000, y: 0.000000, z: 0.000000, w: 1.000000}
+      colorB: !<Vec4> {x: 0.000000, y: 1.000000, z: 0.000000, w: 1.000000}
+      colorC: !<Vec4> {x: 0.000000, y: 0.000000, z: 1.000000, w: 1.000000}
+      mainColorMix: !<float> 1.000000
+      mainEmissive: 0.600000
+      ghostCount: !<float> 16.000000
+      ghostLifetime: 0.350000
+      ghostOpacity: 0.350000
+      ghostEmissive: 0.800000
+      fadeSharpness: 1.500000
+      ghostScale: 0.950000
+      minSpacing: 0.200000
+      clearOnRelease: true
+      ghostMesh: !<reference.RenderMesh> 00000000-0000-0000-0000-000000000000
+      ghostMaterial: !<reference.Material> 00000000-0000-0000-0000-000000000000
+      emissivePort: Port_Emissive_N006
+      opacityPort: Port_Opacity_N006
+  ScriptTypes:
+    "":
+      {}
 - !<SceneObject/80773133-ba19-435e-b99b-89f16e21cce5>
   PrefabRemaps:
     []
@@ -1733,7 +1779,7 @@
   Enabled: true
   Shape: !<Sphere>
     FitVisual: false
-    Radius: 1.500000
+    Radius: 1.100000
   Matter: !<reference> 00000000-0000-0000-0000-000000000000
   Filter: !<reference> 00000000-0000-0000-0000-000000000000
   OverlapFilter: !<reference> 00000000-0000-0000-0000-000000000000
@@ -2750,6 +2796,7 @@
     - !<own> a07e3772-c86c-45cb-892b-bc3caf4b0e38
     - !<own> 9b8f6c52-cc96-45dc-a3df-08eb4e42bae8
     - !<own> b065f53d-144a-457a-8a23-aa0ca86012f7
+    - !<own> 7d945fa3-be50-4cd3-94d3-3fa43e4e03a2
 - !<SceneObject/f949e255-7e6a-4b08-a07e-3147a8f452f1>
   PrefabRemaps:
     []

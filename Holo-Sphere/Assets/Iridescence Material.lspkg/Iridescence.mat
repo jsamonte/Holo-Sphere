@@ -106,7 +106,7 @@
     - receivesRayTracedShadows:
         typeIdx: 2
         value: false
-  DepthWrite: false
+  DepthWrite: true
   DepthTest: true
   DepthFunction: LessEqual
   TwoSided: false
@@ -125,7 +125,7 @@
       value: {x: 1.000000, y: 1.000000, z: 1.000000}
     Port_Emissive_N006:
       typeIdx: 4
-      value: {x: 0.000000, y: 0.000000, z: 0.000000}
+      value: {x: 0.050000, y: 0.500000, z: 0.620000}
     Port_Input1_N011:
       typeIdx: 1
       value: 2.000000
@@ -149,7 +149,7 @@
       value: 1.000000
     Port_Opacity_N006:
       typeIdx: 1
-      value: 0.150000
+      value: 0.300000
     Port_RangeMaxA_N049:
       typeIdx: 1
       value: 1.000000
@@ -173,31 +173,31 @@
       value: 0
     baseColor:
       typeIdx: 5
-      value: {x: 0.880000, y: 0.890000, z: 0.910000, w: 1.000000}
+      value: {x: 0.250000, y: 0.820000, z: 0.950000, w: 1.000000}
     exponent:
       typeIdx: 1
       value: 1.250000
     intensity:
       typeIdx: 1
-      value: 0.650000
+      value: 1.800000
     iridescenceMap:
       typeIdx: 9
       value:
-        id: 7322f3f4-0ab3-46c2-9353-bf80c3d078fc
+        id: 5ea535e0-148e-4366-ab55-ef091941a186
         sampler:
-          filteringMode: Bilinear
-          wrapModeU: ClampToEdge
-          wrapModeV: ClampToEdge
-          wrapModeW: ClampToEdge
-          borderColor: {x: 0.000000, y: 0.000000, z: 0.000000, w: 1.000000}
+          filteringMode: Trilinear
+          wrapModeU: Repeat
+          wrapModeV: Repeat
+          wrapModeW: Repeat
+          borderColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
           mipmaps: false
         type: Texture2D
     metallic:
       typeIdx: 1
-      value: 0.970000
+      value: 0.000000
     mixAmount:
       typeIdx: 1
-      value: 0.000000
+      value: 0.750000
     noiseIntensity:
       typeIdx: 1
       value: 0.350000
@@ -206,8 +206,8 @@
       value: {x: 1.000000, y: 1.000000}
     roughness:
       typeIdx: 1
-      value: 0.200000
+      value: 0.550000
     thinFilmWeight:
       typeIdx: 1
-      value: 0.000000
+      value: 0.850000
   Pass: !<reference> f3fe111a-a123-466a-b6f4-362ed9216ab1
