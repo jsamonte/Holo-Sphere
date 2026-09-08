@@ -113,13 +113,15 @@ export class StrobeGhostTrail extends BaseScriptComponent {
   ghostCount: number = 16
 
   /**
-   * How long each afterimage lingers. This is the "split second" of the trail.
+   * How long each afterimage lingers. At the default this is only a couple of frames, so an
+   * afterimage reads as a single hard flash rather than a smear.
    */
   @input
   @label("Ghost Lifetime (s)")
   @hint("How long each afterimage lingers before it has fully faded out.")
-  @widget(new SliderWidget(0.05, 2, 0.05))
-  ghostLifetime: number = 0.35
+  @widget(new SliderWidget(0.005, 1, 0.005))
+  ghostLifetime: number = 0.035
+
 
   /**
    * Opacity of a freshly spawned afterimage. The sphere's own material is authored quite
@@ -273,6 +275,10 @@ piling up when the sphere is pinched but held still. Set to 0 to emit on every f
 
     // Start at rest, so the sphere is silver white until it is first grabbed.
     this.restoreMainColor()
+
+
+
+
     this.createEvent("UpdateEvent").bind(() => this.onUpdate())
   }
 
