@@ -1000,6 +1000,30 @@
     []
   Components:
     []
+- !<ScriptComponent/4f9e9941-e970-4433-99ef-cc3a8356fc1c>
+  PrefabRemaps:
+    []
+  Name: SphereFlashAudio
+  Enabled: true
+  ScriptAsset: !<reference> 0137e721-aec3-4dfb-b077-b665eeacbc2c
+  ScriptInputsDefault:
+    spatialize: true
+    voiceCount: true
+    minInterval: true
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      mainTrack: !<reference.AudioTrackAsset> 435efb72-faa3-46f5-8cd3-dc6537fa9dc0
+      duplicateTrack: !<reference.AudioTrackAsset> 6a2b0d79-4a91-40cc-878b-4827b2c1a7ca
+      mainVolume: 0.500000
+      duplicateVolume: 0.450000
+      spatialize: true
+      voiceCount: !<float> 4.000000
+      minInterval: !<float> 0.000000
+  ScriptTypes:
+    "":
+      {}
 - !<SceneObject/53cc77ca-fce3-48b7-bb7d-24011f719fa1>
   PrefabRemaps:
     []
@@ -2933,6 +2957,7 @@
     - !<own> 9db92b19-a918-4992-bd76-0966ab5e0637
     - !<own> 6cf705d8-f4f9-4e30-b149-6a3e1e10aad6
     - !<own> 9c83a8cd-4a86-4ee6-98ce-627d0ea99230
+    - !<own> 4f9e9941-e970-4433-99ef-cc3a8356fc1c
 - !<SceneObject/f949e255-7e6a-4b08-a07e-3147a8f452f1>
   PrefabRemaps:
     []
