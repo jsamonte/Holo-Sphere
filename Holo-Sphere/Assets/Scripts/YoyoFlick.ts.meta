@@ -1,0 +1,63 @@
+- !<AssetImportMetadata/64591af5-cd0e-406c-bdd7-547f4e1f6379>
+  ImportedAssetIds:
+    TypeScriptAsset: !<reference> eefc2e26-779c-4d65-8b54-8027e25dbe1a
+  ImporterName: TypeScriptAssetImporter
+  PrimaryAsset: !<reference> eefc2e26-779c-4d65-8b54-8027e25dbe1a
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    TypeScriptAsset: !<own> 4c160f38-5231-49be-90e4-ab265c7363f3
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<TypeScriptAssetData/4c160f38-5231-49be-90e4-ab265c7363f3>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: d9f73cab-2077-4bb5-aa23-424d0db46d57
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    flickSpeed: false
+    followHand: false
+    returnFlickSpeed: false
+    returnTime: false
+    throwDistance: false
+    throwTime: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - throwDistance: !<float> 200.000000
+      flickSpeed: !<float> 90.000000
+      throwTime: 0.400000
+      followHand: true
+      returnTime: 0.350000
+      returnFlickSpeed: !<float> 60.000000
+  ScriptTypes:
+    -
+      {}
+  InputLines:
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Throw</span>"}'
+    - '// @input float throwDistance = 200 {"label":"Throw Distance (cm)", "hint":"How far out the sphere flies on a flick. 200 = 2 metres.", "widget":"slider", "min":20, "max":500, "step":10}'
+    - '// @input float flickSpeed = 90 {"label":"Flick Speed (cm/s)", "hint":"How fast the pinched sphere has to move to count as a flick. Lower triggers more easily.", "widget":"slider", "min":20, "max":300, "step":5}'
+    - '// @input float throwTime = 0.4 {"label":"Throw Time (s)", "hint":"Seconds to reach full extension. Shorter is snappier.", "widget":"slider", "min":0.05, "max":2, "step":0.05}'
+    - '// @input bool followHand = true {"label":"Follow Hand", "hint":"While the sphere is out, keep it hanging off your hand so moving your hand carries it. Off leaves it parked in place."}'
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Return</span>"}'
+    - '// @input float returnTime = 0.35 {"label":"Return Time (s)", "hint":"Seconds to fly home to the pinch.", "widget":"slider", "min":0.05, "max":2, "step":0.05}'
+    - '// @input float returnFlickSpeed = 60 {"label":"Return Flick Speed (cm/s)", "hint":"How fast your hand has to tug back to call the sphere home while you are still pinching. Releasing the pinch always returns it.", "widget":"slider", "min":10, "max":300, "step":5}'

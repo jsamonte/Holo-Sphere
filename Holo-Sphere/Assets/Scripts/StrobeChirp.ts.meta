@@ -1,0 +1,118 @@
+- !<AssetImportMetadata/e7ce6422-e1e4-4af8-9f42-2e852ba78370>
+  ImportedAssetIds:
+    TypeScriptAsset: !<reference> f7face8f-76fe-4ebb-af92-e480efef8b50
+  ImporterName: TypeScriptAssetImporter
+  PrimaryAsset: !<reference> f7face8f-76fe-4ebb-af92-e480efef8b50
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    TypeScriptAsset: !<own> b87760e5-324b-40f3-b860-d0e7a0143a11
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<TypeScriptAssetData/b87760e5-324b-40f3-b860-d0e7a0143a11>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: 37636d57-83eb-4474-8670-b0d29501acf6
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    audio: false
+    audioOutput: false
+    chirpDuration: false
+    colorAHz: false
+    colorBHz: false
+    colorCHz: false
+    decayRate: false
+    duplicateDelay: false
+    duplicateSemitones: false
+    duplicateVolume: false
+    harmonic2: false
+    harmonic3: false
+    maxVoices: false
+    sampleRate: false
+    shakeDecay: false
+    shakeExtraChirps: false
+    shakeMinSpeed: false
+    shakeShortening: false
+    sweepSemitones: false
+    volume: false
+    yoyoSemitones: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - audioOutput: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      audio: !<reference.AudioComponent> 00000000-0000-0000-0000-000000000000
+      sampleRate: !<float> 16000.000000
+      volume: 0.500000
+      colorAHz: 523.250000
+      colorBHz: 659.250000
+      colorCHz: 783.989990
+      sweepSemitones: !<float> 7.000000
+      chirpDuration: 0.090000
+      decayRate: !<float> 4.000000
+      harmonic2: 0.350000
+      harmonic3: 0.150000
+      duplicateSemitones: !<float> -12.000000
+      duplicateDelay: 0.035000
+      duplicateVolume: 0.750000
+      yoyoSemitones: !<float> 12.000000
+      shakeExtraChirps: !<float> 3.000000
+      shakeShortening: 0.500000
+      shakeMinSpeed: !<float> 3.000000
+      shakeDecay: 0.450000
+      maxVoices: !<float> 16.000000
+  ScriptTypes:
+    -
+      {}
+  InputLines:
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Audio Output</span>"}'
+    - '// @input Asset.AudioTrackAsset audioOutput {"label":"Audio Output Asset", "hint":"Audio Output track asset the chirps are synthesised into. Asset Browser -> + -> Audio Output."}'
+    - '// @input Component.AudioComponent audio {"label":"Audio Component", "hint":"Audio Component that plays the Audio Output asset above. Started automatically on init."}'
+    - '// @input float sampleRate = 16000 {"label":"Sample Rate", "hint":"Must match the Sample Rate set on the Audio Output asset, or the chirps play at the wrong pitch.", "widget":"slider", "min":8000, "max":48000, "step":100}'
+    - '// @input float volume = 0.5 {"label":"Volume", "widget":"slider", "min":0, "max":1, "step":0.05}'
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Notes</span>"}'
+    - '// @input float colorAHz = 523.25 {"label":"Color 1 Hz", "hint":"Note the chirp uses when the strobe lands on Color 1. Default is C5.", "widget":"slider", "min":100, "max":2000, "step":1}'
+    - '// @input float colorBHz = 659.25 {"label":"Color 2 Hz", "hint":"Note the chirp uses when the strobe lands on Color 2. Default is E5.", "widget":"slider", "min":100, "max":2000, "step":1}'
+    - '// @input float colorCHz = 783.99 {"label":"Color 3 Hz", "hint":"Note the chirp uses when the strobe lands on Color 3. Default is G5.", "widget":"slider", "min":100, "max":2000, "step":1}'
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Chirp</span>"}'
+    - '// @input float sweepSemitones = 7 {"label":"Sweep (semitones)", "hint":"How far each chirp glides in pitch while it sounds. 0 is a flat beep, higher is a steeper chirp.", "widget":"slider", "min":-24, "max":24, "step":1}'
+    - '// @input float chirpDuration = 0.09 {"label":"Chirp Length (s)", "hint":"Length of a single chirp. Automatically capped so chirps never run into each other.", "widget":"slider", "min":0.02, "max":0.4, "step":0.01}'
+    - '// @input float decayRate = 4 {"label":"Decay", "hint":"How sharply a chirp dies away. Higher is a tighter electronic blip, lower lets it ring.", "widget":"slider", "min":0.5, "max":12, "step":0.5}'
+    - '// @input float harmonic2 = 0.35 {"label":"Harmonic 2", "hint":"Level of the 2nd harmonic. Adds the electronic edge; 0 leaves a pure sine.", "widget":"slider", "min":0, "max":1, "step":0.05}'
+    - '// @input float harmonic3 = 0.15 {"label":"Harmonic 3", "hint":"Level of the 3rd harmonic. More buzz and bite.", "widget":"slider", "min":0, "max":1, "step":0.05}'
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Duplicate Sphere</span>"}'
+    - "// @input float duplicateSemitones = -12 {\"label\":\"Duplicate Pitch (semitones)\", \"hint\":\"Pitch offset of the copy's chirp once the sphere has been split. Negative is lower; -12 is an octave down.\", \"widget\":\"slider\", \"min\":-24, \"max\":0, \"step\":1}"
+    - "// @input float duplicateDelay = 0.035 {\"label\":\"Duplicate Delay (s)\", \"hint\":\"Gap between the original's chirp and the copy's lower answer, so you hear them as two spheres.\", \"widget\":\"slider\", \"min\":0, \"max\":0.15, \"step\":0.005}"
+    - "// @input float duplicateVolume = 0.75 {\"label\":\"Duplicate Volume\", \"hint\":\"Loudness of the copy's chirp relative to the original's.\", \"widget\":\"slider\", \"min\":0, \"max\":1, \"step\":0.05}"
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Yoyo</span>"}'
+    - '// @input float yoyoSemitones = 12 {"label":"Yoyo Pitch (semitones)", "hint":"Pitch offset applied to every chirp while the yoyo is flying. Positive is higher; +12 is an octave up.", "widget":"slider", "min":0, "max":24, "step":1}'
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Shake</span>"}'
+    - '// @input float shakeExtraChirps = 3 {"label":"Shake Extra Chirps", "hint":"Extra chirps packed into each strobe interval at full shake. 0 disables the speed up.", "widget":"slider", "min":0, "max":6, "step":1}'
+    - '// @input float shakeShortening = 0.5 {"label":"Shake Shortening", "hint":"How much shorter each chirp gets at full shake. 0.5 halves its length.", "widget":"slider", "min":0, "max":0.9, "step":0.05}'
+    - '// @input float shakeMinSpeed = 3 {"label":"Shake Sensitivity", "hint":"How hard you have to shake to register, in sphere widths per second. Lower is more sensitive.", "widget":"slider", "min":0.5, "max":12, "step":0.5}'
+    - '// @input float shakeDecay = 0.45 {"label":"Shake Decay (s)", "hint":"How long the speed up lingers after you stop shaking.", "widget":"slider", "min":0.1, "max":2, "step":0.05}'
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Advanced</span>"}'
+    - '// @input float maxVoices = 16 {"label":"Max Voices", "hint":"How many chirps can sound at once. The oldest is stolen when they all run out.", "widget":"slider", "min":4, "max":32, "step":1}'

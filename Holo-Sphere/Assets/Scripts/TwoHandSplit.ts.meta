@@ -1,0 +1,80 @@
+- !<AssetImportMetadata/e3d33bd6-8e50-416e-8549-ea19204cbddc>
+  ImportedAssetIds:
+    TypeScriptAsset: !<reference> cf228ab8-1dd2-4bd8-b4d3-c9fb13645d12
+  ImporterName: TypeScriptAssetImporter
+  PrimaryAsset: !<reference> cf228ab8-1dd2-4bd8-b4d3-c9fb13645d12
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    TypeScriptAsset: !<own> 76280673-2020-49cc-9168-c63314fb913b
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<TypeScriptAssetData/76280673-2020-49cc-9168-c63314fb913b>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: 28abddf5-4818-486e-8b3e-4cd0e69dbfc1
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    emissivePort: false
+    mergeDistance: false
+    mergeDuration: false
+    mirrorAppearance: false
+    mirrorTrail: false
+    opacityPort: false
+    secondSphere: false
+    splitDuration: false
+    splitPop: false
+    splitScale: false
+    splitTravel: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - splitTravel: 0.800000
+      splitPop: 0.500000
+      splitDuration: 0.180000
+      splitScale: !<float> 1.000000
+      mergeDistance: 0.250000
+      mergeDuration: 0.220000
+      secondSphere: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      mirrorAppearance: true
+      mirrorTrail: true
+      emissivePort: Port_Emissive_N006
+      opacityPort: Port_Opacity_N006
+  ScriptTypes:
+    -
+      {}
+  InputLines:
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Split</span>"}'
+    - "// @input float splitTravel = 0.8 {\"label\":\"Split Travel\", \"hint\":\"How much further the hands must pull apart before the sphere splits, as a fraction of the sphere's world scale. Higher values need a longer pull.\", \"widget\":\"slider\", \"min\":0.1, \"max\":3, \"step\":0.05}"
+    - "// @input float splitPop = 0.5 {\"label\":\"Split Pop\", \"hint\":\"Extra push apart applied when the sphere duplicates, as a fraction of the sphere's world scale. Set to 0 for the halves to separate only as fast as the hands do.\", \"widget\":\"slider\", \"min\":0, \"max\":2, \"step\":0.05}"
+    - '// @input float splitDuration = 0.18 {"label":"Split Time (s)", "hint":"How long the halves take to push apart once the split fires.", "widget":"slider", "min":0.05, "max":1, "step":0.01}'
+    - '// @input float splitScale = 1 {"label":"Split Scale", "hint":"Size of each half while the sphere is apart, relative to the whole sphere. 1 keeps both copies full size.", "widget":"slider", "min":0.25, "max":1, "step":0.05}'
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Merge</span>"}'
+    - "// @input float mergeDistance = 0.25 {\"label\":\"Merge Distance\", \"hint\":\"How close the two halves must come before they merge again, as a fraction of the sphere's world scale. Keep it below Split Pop so the sphere does not split and merge on alternating frames.\", \"widget\":\"slider\", \"min\":0.05, \"max\":1, \"step\":0.05}"
+    - '// @input float mergeDuration = 0.22 {"label":"Merge Time (s)", "hint":"How long the halves take to come back together once they merge.", "widget":"slider", "min":0.05, "max":1, "step":0.01}'
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Advanced</span>"}'
+    - "// @input SceneObject secondSphere {\"label\":\"Second Sphere\", \"hint\":\"SceneObject to use as the second sphere. Leave empty to build one from this sphere's own mesh and material.\"}"
+    - "// @input bool mirrorAppearance = true {\"label\":\"Mirror Appearance\", \"hint\":\"Copy the main sphere's colour onto the second sphere each frame, so both halves strobe together.\"}"
+    - "// @input bool mirrorTrail = true {\"label\":\"Mirror Trail\", \"hint\":\"Also give the second sphere the StrobeGhostTrail's afterimages, if that component is present.\"}"
+    - '// @input string emissivePort = "Port_Emissive_N006" {"label":"Emissive Port", "hint":"Name of the emissive (vec3) port to mirror onto the second sphere. Leave empty to skip emissive."}'
+    - '// @input string opacityPort = "Port_Opacity_N006" {"label":"Opacity Port", "hint":"Name of the opacity (float) port to mirror onto the second sphere. Leave empty to skip opacity."}'

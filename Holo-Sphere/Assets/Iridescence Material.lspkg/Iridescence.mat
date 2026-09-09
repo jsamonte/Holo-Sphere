@@ -106,7 +106,7 @@
     - receivesRayTracedShadows:
         typeIdx: 2
         value: false
-  DepthWrite: true
+  DepthWrite: false
   DepthTest: true
   DepthFunction: LessEqual
   TwoSided: false
@@ -118,7 +118,7 @@
   InstanceCount: 1
   Defines:
     []
-  BlendMode: PremultipliedAlphaAuto
+  BlendMode: Add
   Properties:
     Port_AO_N006:
       typeIdx: 4
@@ -149,7 +149,7 @@
       value: 1.000000
     Port_Opacity_N006:
       typeIdx: 1
-      value: 0.300000
+      value: 0.180000
     Port_RangeMaxA_N049:
       typeIdx: 1
       value: 1.000000

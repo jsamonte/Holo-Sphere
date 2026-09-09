@@ -1222,6 +1222,23 @@
   ScriptTypes:
     "":
       {}
+- !<AudioComponent/6cf705d8-f4f9-4e30-b149-6a3e1e10aad6>
+  PrefabRemaps:
+    []
+  Name: Audio
+  Enabled: true
+  AudioTrack: !<reference> 00000000-0000-0000-0000-000000000000
+  EnableAutoplayLoop: false
+  Volume: 1.000000
+  EnableMixToSnap: false
+  RecordVolume: 1.000000
+  EnableSpatialAudio: false
+  EnableDistanceEffect: false
+  CurveType: Logarithm
+  MinDistance: 0.000000
+  MaxDistance: 100.000000
+  EnableDirectivityEffect: false
+  EnablePositionEffect: false
 - !<SceneObject/7117f23a-3bea-4862-aa80-7a0e4de38293>
   PrefabRemaps:
     []
@@ -1370,12 +1387,9 @@
   Enabled: true
   ScriptAsset: !<reference> 98a09bb5-0dae-45df-91f7-f255cc19c36b
   ScriptInputsDefault:
-    strobeInterval: true
+    restColor: true
     mainColorMix: true
-    mainEmissive: true
     ghostCount: true
-    ghostLifetime: true
-    ghostEmissive: true
     fadeSharpness: true
     ghostScale: true
     minSpacing: true
@@ -1388,16 +1402,17 @@
     {}
   ScriptInputs:
     "":
-      strobeInterval: 0.060000
+      strobeInterval: 0.240000
       colorA: !<Vec4> {x: 1.000000, y: 0.000000, z: 0.000000, w: 1.000000}
       colorB: !<Vec4> {x: 0.000000, y: 1.000000, z: 0.000000, w: 1.000000}
       colorC: !<Vec4> {x: 0.000000, y: 0.000000, z: 1.000000, w: 1.000000}
+      restColor: !<Vec4> {x: 0.880000, y: 0.890000, z: 0.910000, w: 1.000000}
       mainColorMix: !<float> 1.000000
-      mainEmissive: 0.600000
+      mainEmissive: 0.350000
       ghostCount: !<float> 16.000000
-      ghostLifetime: 0.350000
-      ghostOpacity: 0.350000
-      ghostEmissive: 0.800000
+      ghostLifetime: 0.500000
+      ghostOpacity: 0.180000
+      ghostEmissive: 0.450000
       fadeSharpness: 1.500000
       ghostScale: 0.950000
       minSpacing: 0.200000
@@ -1676,6 +1691,32 @@
     InvertRotation: false
   SurfaceOptions: !<SurfaceOptions>
     EnhanceWithNativeAR: false
+- !<ScriptComponent/95d944ba-c74f-47a8-a586-9b8e4ad9783f>
+  PrefabRemaps:
+    []
+  Name: YoyoFlick
+  Enabled: true
+  ScriptAsset: !<reference> eefc2e26-779c-4d65-8b54-8027e25dbe1a
+  ScriptInputsDefault:
+    throwDistance: true
+    flickSpeed: true
+    throwTime: true
+    followHand: true
+    returnTime: true
+    returnFlickSpeed: true
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      throwDistance: !<float> 200.000000
+      flickSpeed: !<float> 90.000000
+      throwTime: 0.400000
+      followHand: true
+      returnTime: 0.350000
+      returnFlickSpeed: !<float> 60.000000
+  ScriptTypes:
+    "":
+      {}
 - !<SceneObject/96e5fd40-e54f-41ab-8168-3735892bb730>
   PrefabRemaps:
     []
@@ -1724,6 +1765,97 @@
       acceptableYDirections: !<float> 0.000000
       acceptableZDirections: !<float> 1.000000
       useFilteredPinch: false
+  ScriptTypes:
+    "":
+      {}
+- !<ScriptComponent/9c83a8cd-4a86-4ee6-98ce-627d0ea99230>
+  PrefabRemaps:
+    []
+  Name: StrobeChirp
+  Enabled: true
+  ScriptAsset: !<reference> f7face8f-76fe-4ebb-af92-e480efef8b50
+  ScriptInputsDefault:
+    audioOutput: true
+    sampleRate: true
+    volume: true
+    colorAHz: true
+    colorBHz: true
+    colorCHz: true
+    sweepSemitones: true
+    chirpDuration: true
+    decayRate: true
+    harmonic2: true
+    harmonic3: true
+    duplicateSemitones: true
+    duplicateDelay: true
+    duplicateVolume: true
+    yoyoSemitones: true
+    shakeExtraChirps: true
+    shakeShortening: true
+    shakeMinSpeed: true
+    shakeDecay: true
+    maxVoices: true
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      audioOutput: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      audio: !<reference.AudioComponent> 6cf705d8-f4f9-4e30-b149-6a3e1e10aad6
+      sampleRate: !<float> 16000.000000
+      volume: 0.500000
+      colorAHz: 523.250000
+      colorBHz: 659.250000
+      colorCHz: 783.989990
+      sweepSemitones: !<float> 7.000000
+      chirpDuration: 0.090000
+      decayRate: !<float> 4.000000
+      harmonic2: 0.350000
+      harmonic3: 0.150000
+      duplicateSemitones: !<float> -12.000000
+      duplicateDelay: 0.035000
+      duplicateVolume: 0.750000
+      yoyoSemitones: !<float> 12.000000
+      shakeExtraChirps: !<float> 3.000000
+      shakeShortening: 0.500000
+      shakeMinSpeed: !<float> 3.000000
+      shakeDecay: 0.450000
+      maxVoices: !<float> 16.000000
+  ScriptTypes:
+    "":
+      {}
+- !<ScriptComponent/9db92b19-a918-4992-bd76-0966ab5e0637>
+  PrefabRemaps:
+    []
+  Name: TwoHandSplit
+  Enabled: true
+  ScriptAsset: !<reference> cf228ab8-1dd2-4bd8-b4d3-c9fb13645d12
+  ScriptInputsDefault:
+    splitTravel: true
+    splitPop: true
+    splitDuration: true
+    splitScale: true
+    mergeDistance: true
+    mergeDuration: true
+    secondSphere: true
+    mirrorAppearance: true
+    mirrorTrail: true
+    emissivePort: true
+    opacityPort: true
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      splitTravel: 0.800000
+      splitPop: 0.500000
+      splitDuration: 0.180000
+      splitScale: !<float> 1.000000
+      mergeDistance: 0.250000
+      mergeDuration: 0.220000
+      secondSphere: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      mirrorAppearance: true
+      mirrorTrail: true
+      emissivePort: Port_Emissive_N006
+      opacityPort: Port_Opacity_N006
   ScriptTypes:
     "":
       {}
@@ -2797,6 +2929,10 @@
     - !<own> 9b8f6c52-cc96-45dc-a3df-08eb4e42bae8
     - !<own> b065f53d-144a-457a-8a23-aa0ca86012f7
     - !<own> 7d945fa3-be50-4cd3-94d3-3fa43e4e03a2
+    - !<own> 95d944ba-c74f-47a8-a586-9b8e4ad9783f
+    - !<own> 9db92b19-a918-4992-bd76-0966ab5e0637
+    - !<own> 6cf705d8-f4f9-4e30-b149-6a3e1e10aad6
+    - !<own> 9c83a8cd-4a86-4ee6-98ce-627d0ea99230
 - !<SceneObject/f949e255-7e6a-4b08-a07e-3147a8f452f1>
   PrefabRemaps:
     []

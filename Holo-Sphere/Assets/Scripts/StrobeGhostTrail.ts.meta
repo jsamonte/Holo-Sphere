@@ -79,7 +79,7 @@
   InputLines:
     - '// @ui {"widget":"separator"}'
     - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Strobe</span>"}'
-    - '// @input float strobeInterval = 0.06 {"label":"Strobe Interval (s)", "hint":"Seconds each colour is held before advancing to the next one. Smaller = faster strobe.", "widget":"slider", "min":0.01, "max":0.5, "step":0.01}'
+    - '// @input float strobeInterval = 0.24 {"label":"Strobe Interval (s)", "hint":"Seconds each colour is held before advancing to the next one. Larger = slower strobe, wider spacing.", "widget":"slider", "min":0.01, "max":0.5, "step":0.01}'
     - '// @input vec4 colorA = "{1, 0, 0, 1}" {"label":"Color 1", "widget":"color"}'
     - '// @input vec4 colorB = "{0, 1, 0, 1}" {"label":"Color 2", "widget":"color"}'
     - '// @input vec4 colorC = "{0, 0, 1, 1}" {"label":"Color 3", "widget":"color"}'
@@ -89,7 +89,7 @@
     - '// @ui {"widget":"separator"}'
     - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Trail</span>"}'
     - '// @input float ghostCount = 16 {"label":"Ghost Count", "hint":"Size of the afterimage pool. Should be at least Ghost Lifetime / Strobe Interval.", "widget":"slider", "min":3, "max":40, "step":1}'
-    - '// @input float ghostLifetime = 0.035 {"label":"Ghost Lifetime (s)", "hint":"How long each afterimage lingers before it has fully faded out.", "widget":"slider", "min":0.005, "max":1, "step":0.005}'
+    - '// @input float ghostLifetime = 0.5 {"label":"Ghost Lifetime (s)", "hint":"How long each afterimage lingers before it has fully faded out. Divided by Strobe Interval, this is how many afterimages trail the sphere at once.", "widget":"slider", "min":0.005, "max":1, "step":0.005}'
     - '// @input float ghostOpacity = 0.35 {"label":"Ghost Opacity", "hint":"Opacity of a freshly spawned afterimage, before it starts fading out.", "widget":"slider", "min":0, "max":1, "step":0.05}'
     - '// @input float ghostEmissive = 0.8 {"label":"Ghost Emissive", "hint":"Emissive brightness of a freshly spawned afterimage.", "widget":"slider", "min":0, "max":4, "step":0.05}'
     - '// @input float fadeSharpness = 1.5 {"label":"Fade Sharpness", "hint":"1 is a linear fade. Higher values hold brightness longer then drop off sharply, more strobe than smear.", "widget":"slider", "min":0.25, "max":4, "step":0.25}'
