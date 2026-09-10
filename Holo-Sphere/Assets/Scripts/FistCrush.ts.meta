@@ -1,0 +1,66 @@
+- !<AssetImportMetadata/f0760288-fbe2-4b02-9784-6cc6e7489620>
+  ImportedAssetIds:
+    TypeScriptAsset: !<reference> b6d10587-84b5-4488-8d02-96190105a1e0
+  ImporterName: TypeScriptAssetImporter
+  PrimaryAsset: !<reference> b6d10587-84b5-4488-8d02-96190105a1e0
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    TypeScriptAsset: !<own> d1086826-7966-4e0a-9293-401101a662a5
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<TypeScriptAssetData/d1086826-7966-4e0a-9293-401101a662a5>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: acbf30b2-5a1d-4f16-9957-af2317678ed6
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    allowedHand: false
+    crushTime: false
+    debugLog: false
+    grabRadius: false
+    reappearAtHand: false
+    restoreOnOpen: false
+    restoreTime: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - grabRadius: 1.800000
+      allowedHand: either
+      crushTime: 0.280000
+      restoreOnOpen: true
+      restoreTime: 0.350000
+      reappearAtHand: true
+      debugLog: false
+  ScriptTypes:
+    -
+      {}
+  InputLines:
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Trigger</span>"}'
+    - "// @input float grabRadius = 1.8 {\"label\":\"Grab Radius\", \"hint\":\"How close your palm has to be to the sphere for a fist to crush it, as a multiple of the sphere's own radius. 1 means the palm must reach the surface.\", \"widget\":\"slider\", \"min\":0.5, \"max\":5, \"step\":0.1}"
+    - '// @input string allowedHand = "either" {"label":"Hands", "hint":"Which hands can crush the sphere.", "widget":"combobox", "values":[{"label":"Either", "value":"either"}, {"label":"Left only", "value":"left"}, {"label":"Right only", "value":"right"}]}'
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Timing</span>"}'
+    - '// @input float crushTime = 0.28 {"label":"Crush Time (s)", "hint":"Seconds for the sphere to shrink from full size to nothing.", "widget":"slider", "min":0.05, "max":1.5, "step":0.05}'
+    - '// @input bool restoreOnOpen = true {"label":"Restore On Open", "hint":"Bring the sphere back when the hand that crushed it opens again. Off leaves it gone until something else restores it."}'
+    - '// @input float restoreTime = 0.35 {"label":"Restore Time (s)", "hint":"Seconds for the sphere to swell back to full size.", "widget":"slider", "min":0.05, "max":1.5, "step":0.05}'
+    - '// @input bool reappearAtHand = true {"label":"Reappear At Hand", "hint":"Bring the sphere back at the palm that opened, so it grows out of your hand. Off restores it wherever it was crushed."}'
+    - '// @input bool debugLog {"label":"Debug Log", "hint":"Print hand tracking, palm state and distance to the logger twice a second, to work out why a fist is or is not registering. Leave off for a shipping build."}'

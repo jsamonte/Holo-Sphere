@@ -1,0 +1,142 @@
+- !<AssetImportMetadata/730f9575-6ca0-4d41-b0a8-01b9c0a05419>
+  ImportedAssetIds:
+    TypeScriptAsset: !<reference> 8f43a077-24a3-4fab-84e3-de21dc584d76
+  ImporterName: TypeScriptAssetImporter
+  PrimaryAsset: !<reference> 8f43a077-24a3-4fab-84e3-de21dc584d76
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    TypeScriptAsset: !<own> 65c0a986-e800-48af-8a58-b99f4bed9ec9
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<TypeScriptAssetData/65c0a986-e800-48af-8a58-b99f4bed9ec9>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: 16c7a7c0-7f16-4665-a9c4-4050887aa826
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    collapseInstruction: false
+    collapseOrder: false
+    duplicateInstruction: false
+    duplicateOrder: false
+    easyButton: false
+    easyComplete: false
+    easyMusic: false
+    endingGap: false
+    endingSequence: false
+    finishGap: false
+    goodJob: false
+    hardButton: false
+    hardComplete: false
+    hardMusic: false
+    instructionGap: false
+    mediumButton: false
+    mediumComplete: false
+    mediumMusic: false
+    menuRoot: false
+    musicVolume: false
+    praiseGap: false
+    sphere: false
+    tutorialButton: false
+    tutorialComplete: false
+    tutorialMusic: false
+    voiceVolume: false
+    yoyoInstruction: false
+    yoyoOrder: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - menuRoot: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      tutorialButton: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      easyButton: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      mediumButton: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      hardButton: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      tutorialMusic: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      easyMusic: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      mediumMusic: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      hardMusic: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      duplicateOrder: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      yoyoOrder: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      collapseOrder: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      goodJob: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      duplicateInstruction: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      yoyoInstruction: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      collapseInstruction: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      tutorialComplete: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      easyComplete: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      mediumComplete: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      hardComplete: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      endingSequence: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      sphere: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      musicVolume: 0.350000
+      voiceVolume: !<float> 1.000000
+      instructionGap: 0.300000
+      praiseGap: 1.200000
+      endingGap: 0.600000
+      finishGap: 2.500000
+  ScriptTypes:
+    -
+      {}
+  InputLines:
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Menu</span>"}'
+    - '// @input SceneObject menuRoot {"label":"Menu Root", "hint":"Parent object holding the four buttons. Hidden while a tutorial is running."}'
+    - '// @input SceneObject tutorialButton {"label":"Tutorial Button"}'
+    - '// @input SceneObject easyButton {"label":"Easy Button"}'
+    - '// @input SceneObject mediumButton {"label":"Medium Button"}'
+    - '// @input SceneObject hardButton {"label":"Hard Button"}'
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Music</span>"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #94A3B8; font-size: 11px;\">One bed per difficulty. Loops until the tutorial ends.</span>"}'
+    - '// @input Asset.AudioTrackAsset tutorialMusic {"label":"Tutorial Music"}'
+    - '// @input Asset.AudioTrackAsset easyMusic {"label":"Easy Music"}'
+    - '// @input Asset.AudioTrackAsset mediumMusic {"label":"Medium Music"}'
+    - '// @input Asset.AudioTrackAsset hardMusic {"label":"Hard Music"}'
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Orders</span>"}'
+    - '// @input Asset.AudioTrackAsset duplicateOrder {"label":"Duplicate It"}'
+    - '// @input Asset.AudioTrackAsset yoyoOrder {"label":"Yoyo It"}'
+    - '// @input Asset.AudioTrackAsset collapseOrder {"label":"Collapse It"}'
+    - '// @input Asset.AudioTrackAsset goodJob {"label":"Good Job"}'
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Tutorial Instructions</span>"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #94A3B8; font-size: 11px;\">Tutorial mode only. Each plays right after its order is called out.</span>"}'
+    - '// @input Asset.AudioTrackAsset duplicateInstruction {"label":"Duplicate Instruction", "hint":"Explains how to split the sphere. Assets/Audio/Instruction/Duplicate Instuction.mp3."}'
+    - '// @input Asset.AudioTrackAsset yoyoInstruction {"label":"Yoyo Instruction", "hint":"Explains how to flick the sphere out. Assets/Audio/Instruction/Yoyo Instuction.mp3."}'
+    - '// @input Asset.AudioTrackAsset collapseInstruction {"label":"Collapse Instruction", "hint":"Explains how to crush the sphere in a fist. Assets/Audio/Instruction/Collapse Instruction.mp3."}'
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Completion</span>"}'
+    - "// @ui {\"widget\":\"label\", \"label\":\"<span style=\\\"color: #94A3B8; font-size: 11px;\\\">The mode's line plays first, then the Ending Sequence, then the menu.</span>\"}"
+    - '// @input Asset.AudioTrackAsset tutorialComplete {"label":"Tutorial Complete"}'
+    - '// @input Asset.AudioTrackAsset easyComplete {"label":"Easy Complete"}'
+    - '// @input Asset.AudioTrackAsset mediumComplete {"label":"Medium Complete"}'
+    - '// @input Asset.AudioTrackAsset hardComplete {"label":"Hard Complete"}'
+    - '// @input Asset.AudioTrackAsset endingSequence {"label":"Ending Sequence"}'
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Sphere</span>"}'
+    - '// @input SceneObject sphere {"label":"Sphere", "hint":"The Holo Sphere, whose TwoHandSplit, YoyoFlick and FistCrush are watched to tell when an order has been carried out. Hidden while the menu is up."}'
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Timing</span>"}'
+    - '// @input float musicVolume = 0.35 {"label":"Music Volume", "widget":"slider", "min":0, "max":1, "step":0.05}'
+    - '// @input float voiceVolume = 1 {"label":"Voice Volume", "widget":"slider", "min":0, "max":2, "step":0.05}'
+    - '// @input float instructionGap = 0.3 {"label":"Gap Before Instruction (s)", "hint":"Tutorial mode: pause between an order finishing and its instruction starting.", "widget":"slider", "min":0, "max":2, "step":0.1}'
+    - '// @input float praiseGap = 1.2 {"label":"Gap After Praise (s)", "hint":"Pause between Good Job finishing and the next order being called out.", "widget":"slider", "min":0, "max":3, "step":0.1}'
+    - '// @input float endingGap = 0.6 {"label":"Gap Before Ending (s)", "hint":"Pause between the completion line finishing and the Ending Sequence starting.", "widget":"slider", "min":0, "max":3, "step":0.1}'
+    - '// @input float finishGap = 2.5 {"label":"Gap Before Menu (s)", "hint":"Pause between the Ending Sequence finishing and the menu coming back.", "widget":"slider", "min":0, "max":5, "step":0.1}'

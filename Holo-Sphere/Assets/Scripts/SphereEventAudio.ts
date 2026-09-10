@@ -1,3 +1,4 @@
+import {CrushPhase, FistCrush} from "./FistCrush"
 import {TwoHandSplit} from "./TwoHandSplit"
 import {YoyoFlick} from "./YoyoFlick"
 
@@ -64,6 +65,15 @@ export class SphereEventAudio extends BaseScriptComponent {
   @allowUndefined
   returnTrack: AudioTrackAsset | null = null
 
+  @input
+  @label("Shrink Or Expand")
+  @hint(
+    "Played when a fist crushes the sphere away and again when it swells back out of the hand. \
+Assets/Audio/Shrink or Expand.mp3."
+  )
+  @allowUndefined
+  shrinkExpandTrack: AudioTrackAsset | null = null
+
   @ui.separator
   @ui.label('<span style="color: #60A5FA;">Playback</span>')
 
@@ -95,9 +105,11 @@ come apart. Off leaves the merge silent."
 
   private yoyo: YoyoFlick | null = null
   private split: TwoHandSplit | null = null
+  private crush: FistCrush | null = null
   private audio: AudioComponent | null = null
 
   private lastPhase: number = YoyoPhase.Idle
+  private lastCrushPhase: CrushPhase = CrushPhase.Open
 
   private duplicateObject: SceneObject | null = null
   private duplicateWasLive = false
@@ -111,9 +123,14 @@ come apart. Off leaves the merge silent."
 
     this.yoyo = owner.getComponent(YoyoFlick.getTypeName()) as YoyoFlick
     this.split = owner.getComponent(TwoHandSplit.getTypeName()) as TwoHandSplit
+    this.crush = owner.getComponent(FistCrush.getTypeName()) as FistCrush
 
-    if (this.yoyo === null && this.split === null) {
-      print("SphereEventAudio: no YoyoFlick or TwoHandSplit on " + owner.name + ", nothing will play.")
+    if (this.yoyo === null && this.split === null && this.crush === null) {
+      print(
+        "SphereEventAudio: no YoyoFlick, TwoHandSplit or FistCrush on " +
+          owner.name +
+          ", nothing will play."
+      )
       return
     }
 
@@ -131,6 +148,29 @@ come apart. Off leaves the merge silent."
   private onUpdate(): void {
     this.checkSplit()
     this.checkYoyo()
+    this.checkCrush()
+  }
+
+  /**
+   * Both directions of the crush get the same sound: shrinking away inside the fist, and swelling
+   * back out of the opening hand.
+   */
+  private checkCrush(): void {
+    if (this.crush === null) {
+      return
+    }
+
+    const phase = this.crush.crushPhase
+
+    if (phase === this.lastCrushPhase) {
+      return
+    }
+
+    this.lastCrushPhase = phase
+
+    if (phase === CrushPhase.Crushing || phase === CrushPhase.Restoring) {
+      this.playExclusive(this.shrinkExpandTrack, 1)
+    }
   }
 
   /** The copy switching on is the split; switching off again is the merge. */
