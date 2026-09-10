@@ -26,6 +26,17 @@ const ORDER_SEQUENCE: Order[] = [Order.Duplicate, Order.Yoyo, Order.Collapse]
 /** Every order the rhythm game can pick from. */
 const ALL_ORDERS: Order[] = [Order.Duplicate, Order.Yoyo, Order.Collapse]
 
+/** Beat grid and win condition for one rhythm mode, read from that mode's Inspector section. */
+interface RhythmChart {
+  bpm: number
+  firstDownbeat: number
+  beatsPerBar: number
+  barsPerOrder: number
+  startDelay: number
+  orderCount: number
+  beatOffset: number
+}
+
 /** Which menu button started the current run. Picks the music and the completion line. */
 const enum Mode {
   Tutorial,
@@ -43,7 +54,7 @@ const enum Stage {
   Praising,
   /** Rhythm game: orders are being called out on the beat of the music. */
   Rhythm,
-  /** Rhythm game: wrong move or too slow. Short pause before the menu comes back. */
+  /** Rhythm game: wrong move or too slow. Short pause, then the Ending Sequence and the menu. */
   Failed,
   /** All orders done. The mode's completion line is playing. */
   Completing,
@@ -59,14 +70,18 @@ const enum Stage {
  *
  * **Easy** is the rhythm game. Orders are called out on the beat of the Easy song, one every
  * Bars Per Order bars, with nothing asked during the first Silent Intro seconds. Each order must be
- * carried out before the next order's beat comes round. Doing a different move, or not doing it in
- * time, ends the run and returns to the menu. Orders To Win correct orders in a row plays the Easy
- * completion line, then the Ending Sequence, then the menu. Medium and Hard have no chart of their
- * own yet, so they run Easy.
+ * carried out before the next order's beat comes round, with no Good Job in between - the next
+ * order arriving on the beat is the only sign it counted. Doing a different move, or not doing it
+ * in time, ends the run with the Ending Sequence. Orders To Win correct orders in a row plays the
+ * Easy completion line, then the Ending Sequence. Either way the menu follows.
+ *
+ * **Medium** and **Hard** are the same game on their own songs, each with its own beat grid,
+ * silent intro and pace from its Rhythm section, and its own completion line. Each is faster than
+ * the one before: an order every 3.9 s on Easy, 3.3 s on Medium and 1.9 s on Hard.
  *
  * The beat clock is the music's own playback position rather than a timer, so the orders cannot
  * drift away from the song however long the run goes on, including across the song looping. The
- * BPM and First Downbeat defaults were measured from the Easy song itself.
+ * BPM and First Downbeat defaults were measured from each song itself.
  *
  * Orders are recognised by watching the sphere's own components, so an order is satisfied by
  * actually doing the thing rather than by any separate gesture plumbing:
@@ -216,10 +231,19 @@ order has been carried out. Hidden while the menu is up."
   @widget(new SliderWidget(0, 5, 0.1))
   finishGap: number = 2.5
 
+  @input
+  @label("Gap Before Ending On Fail (s)")
+  @hint(
+    "Rhythm modes: pause between a failed order and the Ending Sequence starting. The menu follows \
+the Ending Sequence."
+  )
+  @widget(new SliderWidget(0, 5, 0.1))
+  failGap: number = 1
+
   @ui.separator
   @ui.label('<span style="color: #60A5FA;">Rhythm (Easy)</span>')
   @ui.label(
-    '<span style="color: #94A3B8; font-size: 11px;">Measured from the Easy song: 123 BPM, first downbeat at 0.148 s. Medium and Hard run Easy for now.</span>'
+    '<span style="color: #94A3B8; font-size: 11px;">Measured from the Easy song: 123 BPM, first downbeat at 0.148 s.</span>'
   )
 
   @input
@@ -266,11 +290,105 @@ slightly off the beat on device."
   @widget(new SliderWidget(-0.25, 0.25, 0.005))
   beatOffset: number = 0
 
+  @ui.separator
+  @ui.label('<span style="color: #60A5FA;">Rhythm (Medium)</span>')
+  @ui.label(
+    '<span style="color: #94A3B8; font-size: 11px;">Measured from the Medium song: 145 BPM, first downbeat at 0.140 s. The first order lands on the drop at 13.4 s.</span>'
+  )
+
   @input
-  @label("Gap Before Menu On Fail (s)")
-  @hint("Pause between a failed order and the menu coming back.")
-  @widget(new SliderWidget(0, 5, 0.1))
-  failGap: number = 1
+  @label("BPM")
+  @hint("Tempo of the Medium song. Measured at 145.0 and steady for the whole track.")
+  mediumBpm: number = 145
+
+  @input
+  @label("First Downbeat (s)")
+  @hint("Seconds into the song file where bar 1 lands. Every order is placed on a bar line counted from here.")
+  mediumFirstDownbeat: number = 0.14
+
+  @input
+  @label("Beats Per Bar")
+  @widget(new SliderWidget(2, 8, 1))
+  mediumBeatsPerBar: number = 4
+
+  @input
+  @label("Bars Per Order")
+  @hint(
+    "An order is called on the first beat of every this-many bars, and must be done before the \
+next one. 2 bars at 145 BPM is 3.3 s per order; 1 bar is 1.66 s."
+  )
+  @widget(new SliderWidget(1, 8, 1))
+  mediumBarsPerOrder: number = 2
+
+  @input
+  @label("Silent Intro (s)")
+  @hint("No orders until this many seconds into the song. The first order is the first bar line after it.")
+  @widget(new SliderWidget(0, 30, 0.5))
+  mediumStartDelay: number = 13
+
+  @input
+  @label("Orders To Win")
+  @hint("Correct orders in a row needed to win.")
+  mediumOrderCount: number = 100
+
+  @input
+  @label("Beat Offset (s)")
+  @hint(
+    "Nudges every order later (positive) or earlier (negative) against the music, if they sound \
+slightly off the beat on device."
+  )
+  @widget(new SliderWidget(-0.25, 0.25, 0.005))
+  mediumBeatOffset: number = 0
+
+  @ui.separator
+  @ui.label('<span style="color: #60A5FA;">Rhythm (Hard)</span>')
+  @ui.label(
+    '<span style="color: #94A3B8; font-size: 11px;">Measured from the Hard song: 126 BPM, first downbeat at 1.867 s. The first order lands on the section change at 15.2 s.</span>'
+  )
+
+  @input
+  @label("BPM")
+  @hint("Tempo of the Hard song. Measured at 126.0 and steady for the whole track.")
+  hardBpm: number = 126
+
+  @input
+  @label("First Downbeat (s)")
+  @hint("Seconds into the song file where bar 1 lands. Every order is placed on a bar line counted from here.")
+  hardFirstDownbeat: number = 1.867
+
+  @input
+  @label("Beats Per Bar")
+  @widget(new SliderWidget(2, 8, 1))
+  hardBeatsPerBar: number = 4
+
+  @input
+  @label("Bars Per Order")
+  @hint(
+    "An order is called on the first beat of every this-many bars, and must be done before the \
+next one. 1 bar at 126 BPM is 1.9 s per order, faster than Medium; 2 bars would be 3.8 s, slower."
+  )
+  @widget(new SliderWidget(1, 8, 1))
+  hardBarsPerOrder: number = 1
+
+  @input
+  @label("Silent Intro (s)")
+  @hint("No orders until this many seconds into the song. The first order is the first bar line after it.")
+  @widget(new SliderWidget(0, 30, 0.5))
+  hardStartDelay: number = 14
+
+  @input
+  @label("Orders To Win")
+  @hint("Correct orders in a row needed to win.")
+  hardOrderCount: number = 100
+
+  @input
+  @label("Beat Offset (s)")
+  @hint(
+    "Nudges every order later (positive) or earlier (negative) against the music, if they sound \
+slightly off the beat on device."
+  )
+  @widget(new SliderWidget(-0.25, 0.25, 0.005))
+  hardBeatOffset: number = 0
 
   private stage: Stage = Stage.Menu
   private mode: Mode = Mode.Tutorial
@@ -284,6 +402,9 @@ slightly off the beat on device."
    */
   private instructionPending = false
   private instructionTimer = 0
+
+  /** Rhythm game: the beat grid of the mode being played, picked when the run starts. */
+  private chart: RhythmChart | null = null
 
   /**
    * Rhythm game: song times, in seconds since the music started and counting across loops, at
@@ -371,9 +492,7 @@ slightly off the beat on device."
   }
 
   private startRun(mode: Mode): void {
-    // Medium and Hard have no chart of their own yet, so they run Easy - its song, its beat grid
-    // and its completion line - until they do.
-    this.mode = mode === Mode.Tutorial ? Mode.Tutorial : Mode.Easy
+    this.mode = mode
 
     // Moved home before it is shown, so it never flashes up wherever the last run left it.
     this.resetSphere()
@@ -424,7 +543,7 @@ slightly off the beat on device."
         break
 
       case Stage.Failed:
-        this.countDown(() => this.returnToMenu())
+        this.countDown(() => this.playEnding())
         break
 
       case Stage.Completing:
@@ -486,6 +605,8 @@ slightly off the beat on device."
   }
 
   private startRhythm(): void {
+    this.chart = this.chartFor(this.mode)
+
     // The schedule waits for the music to report its length, which is what places the orders
     // after each loop of the song back on that loop's own bar lines.
     this.schedule = []
@@ -504,8 +625,45 @@ slightly off the beat on device."
     this.stage = Stage.Rhythm
   }
 
+  /** Each rhythm mode reads its own Inspector section. */
+  private chartFor(mode: Mode): RhythmChart {
+    if (mode === Mode.Medium) {
+      return {
+        bpm: this.mediumBpm,
+        firstDownbeat: this.mediumFirstDownbeat,
+        beatsPerBar: this.mediumBeatsPerBar,
+        barsPerOrder: this.mediumBarsPerOrder,
+        startDelay: this.mediumStartDelay,
+        orderCount: this.mediumOrderCount,
+        beatOffset: this.mediumBeatOffset
+      }
+    }
+
+    if (mode === Mode.Hard) {
+      return {
+        bpm: this.hardBpm,
+        firstDownbeat: this.hardFirstDownbeat,
+        beatsPerBar: this.hardBeatsPerBar,
+        barsPerOrder: this.hardBarsPerOrder,
+        startDelay: this.hardStartDelay,
+        orderCount: this.hardOrderCount,
+        beatOffset: this.hardBeatOffset
+      }
+    }
+
+    return {
+      bpm: this.bpm,
+      firstDownbeat: this.firstDownbeat,
+      beatsPerBar: this.beatsPerBar,
+      barsPerOrder: this.barsPerOrder,
+      startDelay: this.startDelay,
+      orderCount: this.orderCount,
+      beatOffset: this.beatOffset
+    }
+  }
+
   private updateRhythm(): void {
-    if (this.music === null || !this.music.isPlaying()) {
+    if (this.music === null || this.chart === null || !this.music.isPlaying()) {
       return
     }
 
@@ -514,22 +672,22 @@ slightly off the beat on device."
       if (this.songLength <= 0) {
         return
       }
-      this.schedule = this.buildSchedule(this.songLength)
+      this.schedule = this.buildSchedule(this.chart, this.songLength)
     }
 
-    const now = this.songTime()
+    const now = this.songTime(this.chart)
 
     if (this.currentOrder !== null) {
       if (this.orderSatisfied(this.currentOrder)) {
         this.currentOrder = null
         this.ordersDone++
 
-        if (this.ordersDone >= this.orderCount) {
+        if (this.ordersDone >= this.chart.orderCount) {
           this.complete()
           return
         }
 
-        this.playVoice(this.goodJob)
+        // No Good Job here: the next order arriving on its beat is the only sign it counted.
       } else if (this.otherOrderDone(this.currentOrder)) {
         this.fail()
         return
@@ -555,7 +713,7 @@ slightly off the beat on device."
    * Seconds since the music started, counting across loops. The track's own position restarts at
    * zero each time it comes round again, so a jump backwards is counted as one more loop.
    */
-  private songTime(): number {
+  private songTime(chart: RhythmChart): number {
     const position = this.music!.position
 
     if (position + 1 < this.lastSongPosition) {
@@ -563,7 +721,7 @@ slightly off the beat on device."
     }
     this.lastSongPosition = position
 
-    return this.songLoops * this.songLength + position - this.beatOffset
+    return this.songLoops * this.songLength + position - chart.beatOffset
   }
 
   /**
@@ -572,18 +730,18 @@ slightly off the beat on device."
    * downbeat - and a slot that would come too soon after the last one of the previous loop is
    * skipped, so the seam never leaves less than most of a normal window to do an order in.
    */
-  private buildSchedule(songLength: number): number[] {
-    const barLength = (Math.max(1, Math.round(this.beatsPerBar)) * 60) / Math.max(1, this.bpm)
-    const interval = barLength * Math.max(1, Math.round(this.barsPerOrder))
-    const needed = Math.max(1, Math.round(this.orderCount)) + 1
+  private buildSchedule(chart: RhythmChart, songLength: number): number[] {
+    const barLength = (Math.max(1, Math.round(chart.beatsPerBar)) * 60) / Math.max(1, chart.bpm)
+    const interval = barLength * Math.max(1, Math.round(chart.barsPerOrder))
+    const needed = Math.max(1, Math.round(chart.orderCount)) + 1
 
     const slots: number[] = []
     let last = -interval
 
     for (let loopStart = 0; slots.length < needed; loopStart += songLength) {
-      for (let t = this.firstDownbeat; t < songLength && slots.length < needed; t += interval) {
+      for (let t = chart.firstDownbeat; t < songLength && slots.length < needed; t += interval) {
         const at = loopStart + t
-        if (at >= this.startDelay && at - last >= interval * 0.75) {
+        if (at >= chart.startDelay && at - last >= interval * 0.75) {
           slots.push(at)
           last = at
         }

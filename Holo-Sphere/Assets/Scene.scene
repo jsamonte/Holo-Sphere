@@ -1402,6 +1402,28 @@
     praiseGap: true
     endingGap: true
     finishGap: true
+    failGap: true
+    bpm: true
+    firstDownbeat: true
+    beatsPerBar: true
+    barsPerOrder: true
+    startDelay: true
+    orderCount: true
+    beatOffset: true
+    mediumBpm: true
+    mediumFirstDownbeat: true
+    mediumBeatsPerBar: true
+    mediumBarsPerOrder: true
+    mediumStartDelay: true
+    mediumOrderCount: true
+    mediumBeatOffset: true
+    hardBpm: true
+    hardFirstDownbeat: true
+    hardBeatsPerBar: true
+    hardBarsPerOrder: true
+    hardStartDelay: true
+    hardOrderCount: true
+    hardBeatOffset: true
   ScriptTypesDefault:
     {}
   ScriptInputs:
@@ -1434,6 +1456,28 @@
       praiseGap: 1.200000
       endingGap: 0.600000
       finishGap: 2.500000
+      failGap: !<float> 1.000000
+      bpm: !<float> 123.000000
+      firstDownbeat: 0.148000
+      beatsPerBar: !<float> 4.000000
+      barsPerOrder: !<float> 2.000000
+      startDelay: !<float> 7.000000
+      orderCount: !<float> 100.000000
+      beatOffset: !<float> 0.000000
+      mediumBpm: !<float> 145.000000
+      mediumFirstDownbeat: 0.140000
+      mediumBeatsPerBar: !<float> 4.000000
+      mediumBarsPerOrder: !<float> 2.000000
+      mediumStartDelay: !<float> 13.000000
+      mediumOrderCount: !<float> 100.000000
+      mediumBeatOffset: !<float> 0.000000
+      hardBpm: !<float> 126.000000
+      hardFirstDownbeat: 1.867000
+      hardBeatsPerBar: !<float> 4.000000
+      hardBarsPerOrder: !<float> 1.000000
+      hardStartDelay: !<float> 14.000000
+      hardOrderCount: !<float> 100.000000
+      hardBeatOffset: !<float> 0.000000
   ScriptTypes:
     "":
       {}
