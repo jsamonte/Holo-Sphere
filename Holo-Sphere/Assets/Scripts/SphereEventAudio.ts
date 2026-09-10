@@ -85,6 +85,14 @@ playing it once on arrival. Stops the moment it is called back."
   )
   loopWhileAway: boolean = true
 
+  @input
+  @label("Play On Merge")
+  @hint(
+    "Also play the Duplicate sound when the two halves come back together, not just when they \
+come apart. Off leaves the merge silent."
+  )
+  playOnMerge: boolean = true
+
   private yoyo: YoyoFlick | null = null
   private split: TwoHandSplit | null = null
   private audio: AudioComponent | null = null
@@ -129,8 +137,12 @@ playing it once on arrival. Stops the moment it is called back."
   private checkSplit(): void {
     const live = this.duplicateIsLive()
 
-    if (live && !this.duplicateWasLive) {
-      this.playExclusive(this.duplicateTrack, 1)
+    if (live !== this.duplicateWasLive) {
+      // Both edges are the moment the sphere count changes, so both get the same sound: coming
+      // apart on the way up, coming back together on the way down.
+      if (live || this.playOnMerge) {
+        this.playExclusive(this.duplicateTrack, 1)
+      }
     }
 
     this.duplicateWasLive = live

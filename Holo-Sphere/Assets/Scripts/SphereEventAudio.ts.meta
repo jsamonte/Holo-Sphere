@@ -22,11 +22,18 @@
   VersionMajor: 0
   VersionMinor: 0
   VersionPatch: 0
-  ComponentUid: 00000000-0000-0000-0000-000000000000
+  ComponentUid: d75a3529-49f1-44fe-99de-e4bbbf962ca6
   ExportUid: 00000000-0000-0000-0000-000000000000
   PackagePolicy: CanBeUnpacked
   ScriptInputsHidden:
-    {}
+    awayTrack: false
+    duplicateTrack: false
+    loopWhileAway: false
+    playOnMerge: false
+    returnTrack: false
+    spatialize: false
+    throwTrack: false
+    volume: false
   ScriptTypesHidden:
     {}
   ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
@@ -36,10 +43,28 @@
   Attachments:
     []
   DefaultScriptInputs:
-    -
-      {}
+    - duplicateTrack: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      throwTrack: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      awayTrack: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      returnTrack: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      volume: 0.500000
+      spatialize: true
+      loopWhileAway: true
+      playOnMerge: true
   ScriptTypes:
     -
       {}
   InputLines:
-    []
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Tracks</span>"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #94A3B8; font-size: 11px;\">One sound per event. Leave any empty to stay silent for it.</span>"}'
+    - '// @input Asset.AudioTrackAsset duplicateTrack {"label":"Duplicate", "hint":"Played the moment the sphere splits in two. Assets/Audio/Duplicate.mp3."}'
+    - '// @input Asset.AudioTrackAsset throwTrack {"label":"Throw Away", "hint":"Played as the sphere is flicked out on the string. Assets/Audio/Short Throw Away.mp3."}'
+    - '// @input Asset.AudioTrackAsset awayTrack {"label":"Away", "hint":"Played once the sphere reaches full extension. Assets/Audio/Yoyo.mp3."}'
+    - '// @input Asset.AudioTrackAsset returnTrack {"label":"Come Back", "hint":"Played as the sphere flies home. Assets/Audio/Come Back.mp3."}'
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Playback</span>"}'
+    - '// @input float volume = 0.5 {"label":"Volume", "widget":"slider", "min":0, "max":2, "step":0.05}'
+    - '// @input bool spatialize = true {"label":"Spatialize", "hint":"Position the sound in 3D at the sphere, so it comes from wherever the sphere is."}'
+    - '// @input bool loopWhileAway = true {"label":"Loop While Away", "hint":"Hold the Away sound looping for as long as the sphere hangs at full extension, instead of playing it once on arrival. Stops the moment it is called back."}'
+    - '// @input bool playOnMerge = true {"label":"Play On Merge", "hint":"Also play the Duplicate sound when the two halves come back together, not just when they come apart. Off leaves the merge silent."}'
