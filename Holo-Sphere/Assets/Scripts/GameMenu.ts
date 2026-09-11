@@ -70,7 +70,8 @@ const enum Stage {
  * Difficulty menu, the tutorial, and the rhythm game.
  *
  * **Tutorial** calls out the five orders in turn - duplicate, yoyo, collapse, compress, poke -
- * explains each one, and waits as long as the player needs.
+ * explains each one, and waits as long as the player needs, explaining it again each time Repeat
+ * Instructions After seconds go by without it being done.
  *
  * **Easy** is the rhythm game. Orders are called out on the beat of the Easy song, one every
  * Bars Per Order bars, with nothing asked during the first Silent Intro seconds. Each order must be
@@ -243,6 +244,15 @@ it) to 1 (as flat as PalmSquish goes)."
   @hint("Tutorial mode: pause between an order finishing and its instruction starting.")
   @widget(new SliderWidget(0, 2, 0.1))
   instructionGap: number = 0.3
+
+  @input
+  @label("Repeat Instructions After (s)")
+  @hint(
+    "Tutorial mode: if an order still is not done this many seconds after its instructions finish \
+playing, they play again - and again after each repeat - until it is. 0 never repeats them."
+  )
+  @widget(new SliderWidget(0, 60, 1))
+  repeatInstructionsAfter: number = 15
 
   @input
   @label("Gap After Praise (s)")
@@ -434,6 +444,12 @@ slightly off the beat on device."
   private instructionPending = false
   private instructionTimer = 0
 
+  /**
+   * Tutorial mode: seconds of quiet left before the current order's instructions play again. Only
+   * runs down while nothing is being said, so it is always measured from the end of the last line.
+   */
+  private repeatTimer = 0
+
   /** Rhythm game: the beat grid of the mode being played, picked when the run starts. */
   private chart: RhythmChart | null = null
 
@@ -556,6 +572,7 @@ slightly off the beat on device."
     const instruction = this.mode === Mode.Tutorial ? this.instructionFor(order) : null
     this.instructionPending = instruction != null
     this.instructionTimer = this.voiceLength() + this.instructionGap
+    this.repeatTimer = this.repeatInstructionsAfter
 
     this.stage = Stage.AwaitingOrder
   }
@@ -568,6 +585,7 @@ slightly off the beat on device."
         // of the instruction starting over the top of Good Job.
         if (this.stage === Stage.AwaitingOrder) {
           this.tickInstruction()
+          this.tickRepeat()
         }
         break
 
@@ -612,6 +630,30 @@ slightly off the beat on device."
 
     this.instructionPending = false
     this.playVoice(this.instructionFor(ORDER_SEQUENCE[this.orderIndex]))
+  }
+
+  /**
+   * Tutorial mode: an order still not done Repeat Instructions After seconds after its
+   * instructions finished is explained again, and again after each repeat, until it is done. The
+   * wait only counts down in silence, so it never talks over the first explanation or a repeat.
+   */
+  private tickRepeat(): void {
+    if (this.mode !== Mode.Tutorial || this.repeatInstructionsAfter <= 0) {
+      return
+    }
+    if (this.instructionPending || (this.voice !== null && this.voice.isPlaying())) {
+      return
+    }
+
+    this.repeatTimer -= getDeltaTime()
+    if (this.repeatTimer > 0) {
+      return
+    }
+
+    // An order with no instruction clip repeats the order itself, so the player still hears it.
+    const order = ORDER_SEQUENCE[this.orderIndex]
+    this.playVoice(this.instructionFor(order) ?? this.orderClipFor(order))
+    this.repeatTimer = this.repeatInstructionsAfter
   }
 
   /** Runs down the timer set when the current stage was entered. */

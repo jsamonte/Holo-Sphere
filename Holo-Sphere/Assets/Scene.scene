@@ -1349,12 +1349,16 @@
   ScriptAsset: !<reference> 806f40b6-d9e4-41bb-9330-74e2a2ed5217
   ScriptInputsDefault:
     depth: true
+    pokeDelay: true
+    pinchCooldown: true
     debugLog: true
   ScriptTypesDefault:
     {}
   ScriptInputs:
     "":
       depth: 0.150000
+      pokeDelay: 0.300000
+      pinchCooldown: 0.500000
       debugLog: false
   ScriptTypes:
     "":
@@ -1510,6 +1514,7 @@
     compressDepth: true
     voiceVolume: true
     instructionGap: true
+    repeatInstructionsAfter: true
     praiseGap: true
     endingGap: true
     finishGap: true
@@ -1569,6 +1574,7 @@
       musicVolume: 0.262500
       voiceVolume: !<float> 1.000000
       instructionGap: 0.300000
+      repeatInstructionsAfter: !<float> 15.000000
       praiseGap: 1.200000
       endingGap: 0.600000
       finishGap: 2.500000
@@ -3151,8 +3157,8 @@
       awayTrack: !<reference.AudioTrackAsset> 80143f87-48de-4c0e-bc27-0c2e59bd9b1f
       returnTrack: !<reference.AudioTrackAsset> 12036ba5-aeb4-4fd2-b5e3-1a217611a22f
       shrinkExpandTrack: !<reference.AudioTrackAsset> a4cf68ae-806a-4b97-a2cc-60982f9267f6
-      compressTrack: !<reference.AudioTrackAsset> e763b565-d94c-4f64-83de-5a161bfe67d8
-      pokeTrack: !<reference.AudioTrackAsset> 6bfcad14-951c-4218-88d2-60f5997a0e72
+      compressTrack: !<reference.AudioTrackAsset> 6bfcad14-951c-4218-88d2-60f5997a0e72
+      pokeTrack: !<reference.AudioTrackAsset> e763b565-d94c-4f64-83de-5a161bfe67d8
       volume: !<float> 1.000000
       spatialize: true
       loopWhileAway: true
