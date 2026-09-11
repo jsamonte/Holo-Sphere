@@ -41,7 +41,8 @@ const COMPRESS_STOP = 0.02
  * - **Come back.** Entering Returning is it being called home.
  * - **Compress.** The Compress sound loops for as long as two flat hands actually have the
  *   sphere pressed in, and stops the moment it rounds back out or they let go.
- * - **Poke.** Each new poke of a straight index finger into the sphere plays the Poke sound once.
+ * - **Poke.** The Poke sound repeats for as long as a straight index finger is poked into the
+ *   sphere, and stops the moment it comes out.
  *
  * Watching state rather than editing YoyoFlick and TwoHandSplit to add events keeps this script
  * independent of them, at the cost of reading a private field - see {@link YoyoPhase}.
@@ -91,14 +92,14 @@ Assets/Audio/Shrink or Expand.mp3."
   @label("Compress")
   @hint(
     "Loops for as long as two flat hands are squishing the sphere, and stops as soon as they let \
-it go. Assets/Audio/Compress.wav."
+it go. Assets/Audio/Compress 2.mp3."
   )
   @allowUndefined
   compressTrack: AudioTrackAsset | null = null
 
   @input
   @label("Poke")
-  @hint("Played once each time an index finger pokes into the sphere. Assets/Audio/Poke.mp3.")
+  @hint("Repeats for as long as an index finger is poked into the sphere. Assets/Audio/Poke 2.wav.")
   @allowUndefined
   pokeTrack: AudioTrackAsset | null = null
 
@@ -139,6 +140,12 @@ come apart. Off leaves the merge silent."
   private audio: AudioComponent | null = null
 
   private wasPoked = false
+
+  /**
+   * Whether the repeating Poke sound is what this component is playing. Cleared by any other
+   * effect taking over, so a finger coming out never cuts off a sound that has since replaced it.
+   */
+  private pokeLooping = false
 
   private lastPhase: number = YoyoPhase.Idle
   private lastCrushPhase: CrushPhase = CrushPhase.Open
@@ -199,16 +206,26 @@ come apart. Off leaves the merge silent."
     this.checkCrush()
   }
 
-  /** Each new poke - a finger going in, not one held there - plays the Poke sound once. */
+  /**
+   * The Poke sound repeats for as long as a finger is poked into the sphere: started as the finger
+   * goes in, stopped as it comes out. Keyed on those two edges rather than on the poke itself, so
+   * another effect taking over mid-poke is not talked over again every frame.
+   */
   private checkPoke(): void {
     if (this.poke === null) {
       return
     }
 
     const poked = this.poke.isPoked
+
     if (poked && !this.wasPoked) {
-      this.playExclusive(this.pokeTrack, 1)
+      this.playExclusive(this.pokeTrack, -1)
+      this.pokeLooping = this.pokeTrack != null
+    } else if (!poked && this.wasPoked && this.pokeLooping) {
+      this.pokeLooping = false
+      this.stopCurrent()
     }
+
     this.wasPoked = poked
   }
 
@@ -365,8 +382,9 @@ come apart. Off leaves the merge silent."
 
     this.stopCurrent()
 
-    // Whatever plays now is no longer the Compress loop; checkSquish marks it again when it is.
+    // Whatever plays now is no longer either loop; checkSquish and checkPoke mark it when it is.
     this.compressLooping = false
+    this.pokeLooping = false
 
     this.audio.audioTrack = track
     this.audio.volume = this.volume

@@ -1404,6 +1404,28 @@
     []
   Components:
     - !<own> 071b3388-948d-4f0f-89e7-b41bd3bbebbb
+- !<ScriptComponent/698aeff6-a824-4620-99ef-085f9fdef84d>
+  PrefabRemaps:
+    []
+  Name: PokeShake
+  Enabled: true
+  ScriptAsset: !<reference> 7fd7f24b-dae3-489d-a3e3-ad2deea0af41
+  ScriptInputsDefault:
+    strength: true
+    frequency: true
+    flashColours: true
+    flashInterval: true
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      strength: 0.120000
+      frequency: !<float> 26.000000
+      flashColours: true
+      flashInterval: 0.050000
+  ScriptTypes:
+    "":
+      {}
 - !<SceneObject/6a45464d-59a0-4bab-a68b-84b7d11912da>
   PrefabRemaps:
     []
@@ -3129,7 +3151,7 @@
       awayTrack: !<reference.AudioTrackAsset> 80143f87-48de-4c0e-bc27-0c2e59bd9b1f
       returnTrack: !<reference.AudioTrackAsset> 12036ba5-aeb4-4fd2-b5e3-1a217611a22f
       shrinkExpandTrack: !<reference.AudioTrackAsset> a4cf68ae-806a-4b97-a2cc-60982f9267f6
-      compressTrack: !<reference.AudioTrackAsset> c825de47-edce-417f-a0d5-08d1ccc4b226
+      compressTrack: !<reference.AudioTrackAsset> e763b565-d94c-4f64-83de-5a161bfe67d8
       pokeTrack: !<reference.AudioTrackAsset> 6bfcad14-951c-4218-88d2-60f5997a0e72
       volume: !<float> 1.000000
       spatialize: true
@@ -3725,6 +3747,7 @@
     - !<own> d1e7a2d7-77f2-4f52-a98e-7c0c6cce0d37
     - !<own> dc6df5ea-63c1-463a-b5a2-df76a543c8ff
     - !<own> 64daa1e3-d3b2-4128-95e7-ef8c5d91b03a
+    - !<own> 698aeff6-a824-4620-99ef-085f9fdef84d
 - !<SceneObject/f949e255-7e6a-4b08-a07e-3147a8f452f1>
   PrefabRemaps:
     []

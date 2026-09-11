@@ -1,0 +1,57 @@
+- !<AssetImportMetadata/25bf4ceb-e4dd-4cb4-b8f9-16988c4ffe52>
+  ImportedAssetIds:
+    TypeScriptAsset: !<reference> 7fd7f24b-dae3-489d-a3e3-ad2deea0af41
+  ImporterName: TypeScriptAssetImporter
+  PrimaryAsset: !<reference> 7fd7f24b-dae3-489d-a3e3-ad2deea0af41
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    TypeScriptAsset: !<own> 9fd031a7-5615-4aa4-a165-20246c61ebb7
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<TypeScriptAssetData/9fd031a7-5615-4aa4-a165-20246c61ebb7>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: 2693b574-38c8-4947-b431-0f29d54eb583
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    flashColours: false
+    flashInterval: false
+    frequency: false
+    strength: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - strength: 0.120000
+      frequency: !<float> 26.000000
+      flashColours: true
+      flashInterval: 0.050000
+  ScriptTypes:
+    -
+      {}
+  InputLines:
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Shake</span>"}'
+    - '// @input float strength = 0.12 {"label":"Strength", "hint":"How far the sphere shakes, as a fraction of its radius. 0 turns the shake off.", "widget":"slider", "min":0, "max":0.5, "step":0.01}'
+    - '// @input float frequency = 26 {"label":"Speed (Hz)", "hint":"How fast it vibrates. Higher is a finer buzz, lower a slower wobble.", "widget":"slider", "min":5, "max":60, "step":1}'
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Colour Flash</span>"}'
+    - '// @input bool flashColours = true {"label":"Flash Colours", "hint":"Strobe the sphere through its colours, with coloured afterimages, for as long as it is poked."}'
+    - '// @input float flashInterval = 0.05 {"label":"Flash Interval (s)", "hint":"Seconds each colour shows during the flash. Shorter flickers faster and drops more afterimages.", "widget":"slider", "min":0.02, "max":0.24, "step":0.01}'

@@ -257,6 +257,10 @@ piling up when the sphere is pinched but held still. Set to 0 to emit on every f
   private isPinched = false
   private externalHold = false
   private isActive = false
+
+  /** Seconds left on a burst (see {@link burst}), and the pace its colours flash at. */
+  private burstTimer = 0
+  private burstInterval = 0.05
   private mainEmitter!: Emitter
   private mirrors: Emitter[] = []
 
@@ -365,6 +369,30 @@ piling up when the sphere is pinched but held still. Set to 0 to emit on every f
     this.updateActive()
   }
 
+  /**
+   * Runs the strobe on its own for `duration` seconds at `interval` seconds per colour, with every
+   * flash dropping an afterimage however little the sphere has moved. Used to flash the sphere when
+   * it is poked. Calling it again while one is running starts it over.
+   */
+  burst(duration: number, interval: number): void {
+    this.burstTimer = Math.max(0, duration)
+    this.burstInterval = Math.max(0.01, interval)
+    this.updateActive(true)
+  }
+
+  /**
+   * Cuts a burst short, handing the strobe straight back to the pinch and any external hold. If
+   * nothing else is holding it on, the sphere returns to rest and the burst's afterimages clear at
+   * once, the same as letting go of a pinch.
+   */
+  endBurst(): void {
+    if (this.burstTimer <= 0) {
+      return
+    }
+    this.burstTimer = 0
+    this.updateActive()
+  }
+
   private setPinched(pinched: boolean): void {
     if (this.isPinched === pinched) {
       return
@@ -374,12 +402,12 @@ piling up when the sphere is pinched but held still. Set to 0 to emit on every f
   }
 
   /**
-   * The strobe is live while the sphere is pinched or while something else is holding it on.
-   * Only the transitions in and out of live do any work, so a pinch released during a flight
-   * that is still holding the strobe on changes nothing.
+   * The strobe is live while the sphere is pinched, while something else is holding it on, or for
+   * the length of a burst. Only the transitions in and out of live do any work, so a pinch
+   * released during a flight that is still holding the strobe on changes nothing.
    */
-  private updateActive(): void {
-    const active = this.isPinched || this.externalHold
+  private updateActive(fromBurst: boolean = false): void {
+    const active = this.isPinched || this.externalHold || this.burstTimer > 0
     if (this.isActive === active) {
       return
     }
@@ -388,16 +416,23 @@ piling up when the sphere is pinched but held still. Set to 0 to emit on every f
     if (active) {
       // Prime the clock so the first flash fires on the next frame and lands on colour 1,
       // and make sure that first flash emits rather than being held back by minSpacing.
-      this.strobeTimer = Math.max(0.01, this.strobeInterval)
+      this.strobeTimer = this.currentInterval()
       this.colorIndex = SEQUENCE_LENGTH - 1
       this.resetEmitters()
       return
     }
 
     this.restoreMainColor()
-    if (this.clearOnRelease) {
+    // A burst running out leaves its afterimages to fade; Clear On Release is about letting go.
+    if (this.clearOnRelease && !fromBurst) {
       this.hideAllGhosts()
     }
+  }
+
+  /** Seconds per colour: the burst's own, faster pace while one is running. */
+  private currentInterval(): number {
+    const interval = this.burstTimer > 0 ? Math.min(this.strobeInterval, this.burstInterval) : this.strobeInterval
+    return Math.max(0.01, interval)
   }
 
   private onUpdate(): void {
@@ -405,8 +440,16 @@ piling up when the sphere is pinched but held still. Set to 0 to emit on every f
 
     // The strobe clock runs for as long as the effect is live: the pinch itself, plus any yoyo
     // flight that outlives the pinch that started it.
+    if (this.burstTimer > 0) {
+      this.burstTimer -= deltaTime
+      if (this.burstTimer <= 0) {
+        this.burstTimer = 0
+        this.updateActive(true)
+      }
+    }
+
     if (this.isActive) {
-      const interval = Math.max(0.01, this.strobeInterval)
+      const interval = this.currentInterval()
       this.strobeTimer += deltaTime
       while (this.strobeTimer >= interval) {
         this.strobeTimer -= interval
@@ -485,7 +528,8 @@ piling up when the sphere is pinched but held still. Set to 0 to emit on every f
     const position = transform.getWorldPosition()
     const scale = transform.getWorldScale()
 
-    if (emitter.lastEmitPosition !== null && this.minSpacing > 0) {
+    // A burst drops an afterimage on every flash: the shake it rides on barely moves the sphere.
+    if (emitter.lastEmitPosition !== null && this.minSpacing > 0 && this.burstTimer <= 0) {
       // Largest world scale axis stands in for the sphere's size, so the threshold tracks the
       // sphere if it is ever resized.
       const size = Math.max(scale.x, Math.max(scale.y, scale.z))
