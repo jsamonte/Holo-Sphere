@@ -1341,6 +1341,24 @@
     - !<own> 1ebc0946-25e2-4421-b8e7-d2faa0ae4163
   Components:
     []
+- !<ScriptComponent/64daa1e3-d3b2-4128-95e7-ef8c5d91b03a>
+  PrefabRemaps:
+    []
+  Name: FingerPoke
+  Enabled: true
+  ScriptAsset: !<reference> 806f40b6-d9e4-41bb-9330-74e2a2ed5217
+  ScriptInputsDefault:
+    depth: true
+    debugLog: true
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      depth: 0.150000
+      debugLog: false
+  ScriptTypes:
+    "":
+      {}
 - !<SceneObject/67183f17-4230-4a27-9f9a-2a6546a50349>
   PrefabRemaps:
     []
@@ -1467,6 +1485,7 @@
   Enabled: true
   ScriptAsset: !<reference> 8f43a077-24a3-4fab-84e3-de21dc584d76
   ScriptInputsDefault:
+    compressDepth: true
     voiceVolume: true
     instructionGap: true
     praiseGap: true
@@ -1510,16 +1529,21 @@
       duplicateOrder: !<reference.AudioTrackAsset> d17cad83-62e3-4dde-b9a0-3f495f1bb89e
       yoyoOrder: !<reference.AudioTrackAsset> e7952a39-ef3a-4b18-93e2-537df6b2e372
       collapseOrder: !<reference.AudioTrackAsset> e2dfee59-fe45-4902-a5a1-b6240f066be4
+      compressOrder: !<reference.AudioTrackAsset> a263678b-2db2-46c7-8bd0-abf26329e4a7
+      pokeOrder: !<reference.AudioTrackAsset> 65c3dbee-43fd-47d5-8a98-49612249cfd2
       goodJob: !<reference.AudioTrackAsset> cb70e49e-a270-47e2-88fa-5b0ae9e7d1e9
       duplicateInstruction: !<reference.AudioTrackAsset> 6870091f-cb15-4c68-b330-d13a068a769a
       yoyoInstruction: !<reference.AudioTrackAsset> e35e2e18-2920-4176-bebd-92ffcc6d822c
       collapseInstruction: !<reference.AudioTrackAsset> ea04ac6d-8d7c-4d29-ac47-554bfa445fb7
+      compressInstruction: !<reference.AudioTrackAsset> 7aa1289b-be8f-4075-a212-92c68bd01fa9
+      pokeInstruction: !<reference.AudioTrackAsset> 2a38dbeb-f245-4744-a838-d5e17e129403
       tutorialComplete: !<reference.AudioTrackAsset> 97baa06e-8403-4431-9675-7492b0033865
       easyComplete: !<reference.AudioTrackAsset> 2a16c74b-cce3-4352-a72a-1d5e19952047
       mediumComplete: !<reference.AudioTrackAsset> 4615b955-8020-4dc8-9df6-06430dc45f2f
       hardComplete: !<reference.AudioTrackAsset> 8c7e03a5-0f2c-4b1f-9f80-f60ef8d78cc5
       endingSequence: !<reference.AudioTrackAsset> 1ae7f334-0e63-4ad4-873c-0a1a73739c6d
       sphere: !<reference.SceneObject> f4e9f6d6-b5d4-4e82-89ff-1f494b035dce
+      compressDepth: 0.500000
       musicVolume: 0.262500
       voiceVolume: !<float> 1.000000
       instructionGap: 0.300000
@@ -3105,6 +3129,8 @@
       awayTrack: !<reference.AudioTrackAsset> 80143f87-48de-4c0e-bc27-0c2e59bd9b1f
       returnTrack: !<reference.AudioTrackAsset> 12036ba5-aeb4-4fd2-b5e3-1a217611a22f
       shrinkExpandTrack: !<reference.AudioTrackAsset> a4cf68ae-806a-4b97-a2cc-60982f9267f6
+      compressTrack: !<reference.AudioTrackAsset> c825de47-edce-417f-a0d5-08d1ccc4b226
+      pokeTrack: !<reference.AudioTrackAsset> 6bfcad14-951c-4218-88d2-60f5997a0e72
       volume: !<float> 1.000000
       spatialize: true
       loopWhileAway: true
@@ -3220,6 +3246,7 @@
   ScriptInputsDefault:
     color: true
     opacityPort: true
+    width: true
     height: true
     depth: true
   ScriptTypesDefault:
@@ -3229,7 +3256,7 @@
       color: !<Vec4> {x: 0.880000, y: 0.890000, z: 0.910000, w: 1.000000}
       opacity: 0.150000
       opacityPort: Port_Opacity_N006
-      width: !<float> 20.000000
+      width: !<float> 26.000000
       height: !<float> 48.000000
       depth: !<float> 1.000000
   ScriptTypes:
@@ -3303,6 +3330,40 @@
     - !<own> 7c62f44b-a4e7-4d22-bb81-d8a26769051d
   Components:
     []
+- !<ScriptComponent/dc6df5ea-63c1-463a-b5a2-df76a543c8ff>
+  PrefabRemaps:
+    []
+  Name: PalmSquish
+  Enabled: true
+  ScriptAsset: !<reference> ce2a6b08-3dbf-420d-bde6-a7e007bab356
+  ScriptInputsDefault:
+    reach: true
+    palmPadding: true
+    flatMemory: true
+    trackingGrace: true
+    flattest: true
+    bulge: true
+    followHands: true
+    stiffness: true
+    damping: true
+    debugLog: true
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      reach: 2.500000
+      palmPadding: !<float> 1.000000
+      flatMemory: 0.600000
+      trackingGrace: 0.250000
+      flattest: 0.150000
+      bulge: 0.700000
+      followHands: true
+      stiffness: !<float> 220.000000
+      damping: !<float> 9.000000
+      debugLog: false
+  ScriptTypes:
+    "":
+      {}
 - !<SceneObject/dcd9910d-75e1-459d-8bc4-964a18dace6c>
   PrefabRemaps:
     []
@@ -3662,6 +3723,8 @@
     - !<own> 9c83a8cd-4a86-4ee6-98ce-627d0ea99230
     - !<own> 58079748-0550-46d9-ba94-425ef9445f40
     - !<own> d1e7a2d7-77f2-4f52-a98e-7c0c6cce0d37
+    - !<own> dc6df5ea-63c1-463a-b5a2-df76a543c8ff
+    - !<own> 64daa1e3-d3b2-4128-95e7-ef8c5d91b03a
 - !<SceneObject/f949e255-7e6a-4b08-a07e-3147a8f452f1>
   PrefabRemaps:
     []

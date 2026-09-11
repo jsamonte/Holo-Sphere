@@ -32,6 +32,9 @@
     bpm: false
     collapseInstruction: false
     collapseOrder: false
+    compressDepth: false
+    compressInstruction: false
+    compressOrder: false
     duplicateInstruction: false
     duplicateOrder: false
     easyButton: false
@@ -67,6 +70,8 @@
     menuRoot: false
     musicVolume: false
     orderCount: false
+    pokeInstruction: false
+    pokeOrder: false
     praiseGap: false
     sphere: false
     startDelay: false
@@ -97,16 +102,21 @@
       duplicateOrder: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
       yoyoOrder: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
       collapseOrder: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      compressOrder: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      pokeOrder: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
       goodJob: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
       duplicateInstruction: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
       yoyoInstruction: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
       collapseInstruction: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      compressInstruction: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      pokeInstruction: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
       tutorialComplete: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
       easyComplete: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
       mediumComplete: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
       hardComplete: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
       endingSequence: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
       sphere: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      compressDepth: 0.500000
       musicVolume: 0.350000
       voiceVolume: !<float> 1.000000
       instructionGap: 0.300000
@@ -158,6 +168,8 @@
     - '// @input Asset.AudioTrackAsset duplicateOrder {"label":"Duplicate It"}'
     - '// @input Asset.AudioTrackAsset yoyoOrder {"label":"Yoyo It"}'
     - '// @input Asset.AudioTrackAsset collapseOrder {"label":"Collapse It"}'
+    - '// @input Asset.AudioTrackAsset compressOrder {"label":"Compress It"}'
+    - '// @input Asset.AudioTrackAsset pokeOrder {"label":"Poke It"}'
     - '// @input Asset.AudioTrackAsset goodJob {"label":"Good Job"}'
     - '// @ui {"widget":"separator"}'
     - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Tutorial Instructions</span>"}'
@@ -165,6 +177,8 @@
     - '// @input Asset.AudioTrackAsset duplicateInstruction {"label":"Duplicate Instruction", "hint":"Explains how to split the sphere. Assets/Audio/Instruction/Duplicate Instuction.mp3."}'
     - '// @input Asset.AudioTrackAsset yoyoInstruction {"label":"Yoyo Instruction", "hint":"Explains how to flick the sphere out. Assets/Audio/Instruction/Yoyo Instuction.mp3."}'
     - '// @input Asset.AudioTrackAsset collapseInstruction {"label":"Collapse Instruction", "hint":"Explains how to crush the sphere in a fist. Assets/Audio/Instruction/Collapse Instruction.mp3."}'
+    - '// @input Asset.AudioTrackAsset compressInstruction {"label":"Compress Instruction", "hint":"Explains how to squish the sphere between two flat hands. Assets/Audio/Instruction/Compress Instructions.mp3."}'
+    - '// @input Asset.AudioTrackAsset pokeInstruction {"label":"Poke Instruction", "hint":"Explains how to poke the sphere with an index finger. Assets/Audio/Instruction/Poke Instructions.mp3."}'
     - '// @ui {"widget":"separator"}'
     - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Completion</span>"}'
     - "// @ui {\"widget\":\"label\", \"label\":\"<span style=\\\"color: #94A3B8; font-size: 11px;\\\">The mode's line plays first, then the Ending Sequence, then the menu.</span>\"}"
@@ -175,7 +189,8 @@
     - '// @input Asset.AudioTrackAsset endingSequence {"label":"Ending Sequence"}'
     - '// @ui {"widget":"separator"}'
     - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Sphere</span>"}'
-    - '// @input SceneObject sphere {"label":"Sphere", "hint":"The Holo Sphere, whose TwoHandSplit, YoyoFlick and FistCrush are watched to tell when an order has been carried out. Hidden while the menu is up."}'
+    - '// @input SceneObject sphere {"label":"Sphere", "hint":"The Holo Sphere, whose TwoHandSplit, YoyoFlick, FistCrush, PalmSquish and FingerPoke are watched to tell when an order has been carried out. Hidden while the menu is up."}'
+    - '// @input float compressDepth = 0.5 {"label":"Compress Depth", "hint":"How flat the sphere has to be squished for Compress It to count, from 0 (palms just touching it) to 1 (as flat as PalmSquish goes).", "widget":"slider", "min":0.05, "max":1, "step":0.05}'
     - '// @ui {"widget":"separator"}'
     - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Timing</span>"}'
     - '// @input float musicVolume = 0.35 {"label":"Music Volume", "widget":"slider", "min":0, "max":1, "step":0.05}'

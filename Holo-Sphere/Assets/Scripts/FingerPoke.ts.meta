@@ -1,0 +1,49 @@
+- !<AssetImportMetadata/14c3d122-8e76-4379-928f-55916f08d8cb>
+  ImportedAssetIds:
+    TypeScriptAsset: !<reference> 806f40b6-d9e4-41bb-9330-74e2a2ed5217
+  ImporterName: TypeScriptAssetImporter
+  PrimaryAsset: !<reference> 806f40b6-d9e4-41bb-9330-74e2a2ed5217
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    TypeScriptAsset: !<own> ed1d55ed-d01f-4513-b35f-7b1e75effea4
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<TypeScriptAssetData/ed1d55ed-d01f-4513-b35f-7b1e75effea4>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: 6c190a1e-230f-4bb6-b103-564660033cf7
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    debugLog: false
+    depth: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - depth: 0.150000
+      debugLog: false
+  ScriptTypes:
+    -
+      {}
+  InputLines:
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Trigger</span>"}'
+    - "// @input float depth = 0.15 {\"label\":\"Depth\", \"hint\":\"How far past the sphere's surface the fingertip has to reach to count, as a fraction of the sphere's radius. 0 counts at the surface; higher needs a deeper poke.\", \"widget\":\"slider\", \"min\":0, \"max\":0.8, \"step\":0.05}"
+    - "// @input bool debugLog {\"label\":\"Debug Log\", \"hint\":\"Print both index fingers' pose and depth twice a second, to work out why a poke is or is not registering. Leave off for a shipping build.\"}"

@@ -1,6 +1,8 @@
 import {Interactable} from "../SpectaclesInteractionKit.lspkg/Components/Interaction/Interactable/Interactable"
 import {InteractorEvent} from "../SpectaclesInteractionKit.lspkg/Core/Interactor/InteractorEvent"
+import {FingerPoke} from "./FingerPoke"
 import {CrushPhase, FistCrush} from "./FistCrush"
+import {PalmSquish, SquishPhase} from "./PalmSquish"
 import {TwoHandSplit} from "./TwoHandSplit"
 import {YoyoFlick} from "./YoyoFlick"
 
@@ -13,18 +15,20 @@ const enum YoyoPhase {
   Returning = 4
 }
 
-/** The three things the game asks for. */
+/** The five things the game asks for. */
 const enum Order {
   Duplicate = 0,
   Yoyo = 1,
-  Collapse = 2
+  Collapse = 2,
+  Compress = 3,
+  Poke = 4
 }
 
 /** The tutorial asks for each order once, in this order. */
-const ORDER_SEQUENCE: Order[] = [Order.Duplicate, Order.Yoyo, Order.Collapse]
+const ORDER_SEQUENCE: Order[] = [Order.Duplicate, Order.Yoyo, Order.Collapse, Order.Compress, Order.Poke]
 
-/** Every order the rhythm game can pick from. */
-const ALL_ORDERS: Order[] = [Order.Duplicate, Order.Yoyo, Order.Collapse]
+/** Every order the rhythm game can pick from, each exactly once so each is equally likely. */
+const ALL_ORDERS: Order[] = [Order.Duplicate, Order.Yoyo, Order.Collapse, Order.Compress, Order.Poke]
 
 /** Beat grid and win condition for one rhythm mode, read from that mode's Inspector section. */
 interface RhythmChart {
@@ -65,8 +69,8 @@ const enum Stage {
 /**
  * Difficulty menu, the tutorial, and the rhythm game.
  *
- * **Tutorial** calls out three orders in turn - duplicate, yoyo, collapse - explains each one, and
- * waits as long as the player needs.
+ * **Tutorial** calls out the five orders in turn - duplicate, yoyo, collapse, compress, poke -
+ * explains each one, and waits as long as the player needs.
  *
  * **Easy** is the rhythm game. Orders are called out on the beat of the Easy song, one every
  * Bars Per Order bars, with nothing asked during the first Silent Intro seconds. Each order must be
@@ -89,6 +93,10 @@ const enum Stage {
  * - **Duplicate** - TwoHandSplit's copy turning on.
  * - **Yoyo** - YoyoFlick leaving the hand.
  * - **Collapse** - FistCrush starting to shrink the sphere.
+ * - **Compress** - PalmSquish pressing the sphere at least Compress Depth of the way flat.
+ * - **Poke** - FingerPoke seeing a straight index finger pushed into the sphere.
+ *
+ * The rhythm game picks each order at random from all five, so every order is equally likely.
  *
  * Music and voice each get their own AudioComponent so an order is never cut off by the sphere's
  * own sound effects, and the music bed runs underneath everything.
@@ -144,6 +152,8 @@ export class GameMenu extends BaseScriptComponent {
   @input @label("Duplicate It") @allowUndefined duplicateOrder: AudioTrackAsset | null = null
   @input @label("Yoyo It") @allowUndefined yoyoOrder: AudioTrackAsset | null = null
   @input @label("Collapse It") @allowUndefined collapseOrder: AudioTrackAsset | null = null
+  @input @label("Compress It") @allowUndefined compressOrder: AudioTrackAsset | null = null
+  @input @label("Poke It") @allowUndefined pokeOrder: AudioTrackAsset | null = null
   @input @label("Good Job") @allowUndefined goodJob: AudioTrackAsset | null = null
 
   @ui.separator
@@ -170,6 +180,18 @@ export class GameMenu extends BaseScriptComponent {
   @allowUndefined
   collapseInstruction: AudioTrackAsset | null = null
 
+  @input
+  @label("Compress Instruction")
+  @hint("Explains how to squish the sphere between two flat hands. Assets/Audio/Instruction/Compress Instructions.mp3.")
+  @allowUndefined
+  compressInstruction: AudioTrackAsset | null = null
+
+  @input
+  @label("Poke Instruction")
+  @hint("Explains how to poke the sphere with an index finger. Assets/Audio/Instruction/Poke Instructions.mp3.")
+  @allowUndefined
+  pokeInstruction: AudioTrackAsset | null = null
+
   @ui.separator
   @ui.label('<span style="color: #60A5FA;">Completion</span>')
   @ui.label(
@@ -188,11 +210,20 @@ export class GameMenu extends BaseScriptComponent {
   @input
   @label("Sphere")
   @hint(
-    "The Holo Sphere, whose TwoHandSplit, YoyoFlick and FistCrush are watched to tell when an \
-order has been carried out. Hidden while the menu is up."
+    "The Holo Sphere, whose TwoHandSplit, YoyoFlick, FistCrush, PalmSquish and FingerPoke are \
+watched to tell when an order has been carried out. Hidden while the menu is up."
   )
   @allowUndefined
   sphere: SceneObject | null = null
+
+  @input
+  @label("Compress Depth")
+  @hint(
+    "How flat the sphere has to be squished for Compress It to count, from 0 (palms just touching \
+it) to 1 (as flat as PalmSquish goes)."
+  )
+  @widget(new SliderWidget(0.05, 1, 0.05))
+  compressDepth: number = 0.5
 
   @ui.separator
   @ui.label('<span style="color: #60A5FA;">Timing</span>')
@@ -427,6 +458,8 @@ slightly off the beat on device."
   private split: TwoHandSplit | null = null
   private yoyo: YoyoFlick | null = null
   private crush: FistCrush | null = null
+  private squish: PalmSquish | null = null
+  private poke: FingerPoke | null = null
 
   private duplicateObject: SceneObject | null = null
 
@@ -438,6 +471,8 @@ slightly off the beat on device."
   private wasDuplicated = false
   private lastYoyoPhase: number = YoyoPhase.Idle
   private lastCrushPhase: CrushPhase = CrushPhase.Open
+  private wasCompressed = false
+  private wasPoked = false
 
   onAwake(): void {
     this.createEvent("OnStartEvent").bind(() => this.init())
@@ -451,6 +486,8 @@ slightly off the beat on device."
     this.split = owner.getComponent(TwoHandSplit.getTypeName()) as TwoHandSplit
     this.yoyo = owner.getComponent(YoyoFlick.getTypeName()) as YoyoFlick
     this.crush = owner.getComponent(FistCrush.getTypeName()) as FistCrush
+    this.squish = owner.getComponent(PalmSquish.getTypeName()) as PalmSquish
+    this.poke = owner.getComponent(FingerPoke.getTypeName()) as FingerPoke
 
     if (this.sphere != null) {
       this.sphereHome = this.sphere.getTransform().getWorldPosition()
@@ -704,6 +741,7 @@ slightly off the beat on device."
       return
     }
 
+    // Uniform over ALL_ORDERS, which lists each order once, so all five are equally likely.
     this.currentOrder = ALL_ORDERS[Math.floor(Math.random() * ALL_ORDERS.length)]
     this.nextSlot++
     this.playVoice(this.orderClipFor(this.currentOrder))
@@ -783,6 +821,10 @@ slightly off the beat on device."
         return this.duplicateOrder
       case Order.Yoyo:
         return this.yoyoOrder
+      case Order.Compress:
+        return this.compressOrder
+      case Order.Poke:
+        return this.pokeOrder
       default:
         return this.collapseOrder
     }
@@ -794,6 +836,10 @@ slightly off the beat on device."
         return this.duplicateInstruction
       case Order.Yoyo:
         return this.yoyoInstruction
+      case Order.Compress:
+        return this.compressInstruction
+      case Order.Poke:
+        return this.pokeInstruction
       default:
         return this.collapseInstruction
     }
@@ -841,6 +887,12 @@ slightly off the beat on device."
         return phase === CrushPhase.Crushing && this.lastCrushPhase !== CrushPhase.Crushing
       }
 
+      case Order.Compress:
+        return this.isCompressed() && !this.wasCompressed
+
+      case Order.Poke:
+        return this.isPoked() && !this.wasPoked
+
       default:
         return false
     }
@@ -860,6 +912,8 @@ slightly off the beat on device."
     this.wasDuplicated = this.duplicateIsLive()
     this.lastYoyoPhase = this.readYoyoPhase()
     this.lastCrushPhase = this.readCrushPhase()
+    this.wasCompressed = this.isCompressed()
+    this.wasPoked = this.isPoked()
   }
 
   private readYoyoPhase(): number {
@@ -872,6 +926,23 @@ slightly off the beat on device."
 
   private readCrushPhase(): CrushPhase {
     return this.crush !== null ? this.crush.crushPhase : CrushPhase.Open
+  }
+
+  /**
+   * Squished at least Compress Depth of the way flat. Measured on depth rather than on the squish
+   * starting, so palms merely brushing the sphere do not count as compressing it.
+   */
+  private isCompressed(): boolean {
+    return (
+      this.squish !== null &&
+      this.squish.squishPhase === SquishPhase.Squishing &&
+      this.squish.squishAmount >= this.compressDepth
+    )
+  }
+
+  /** A straight index finger pushed into the sphere. */
+  private isPoked(): boolean {
+    return this.poke !== null && this.poke.isPoked
   }
 
   private duplicateIsLive(): boolean {

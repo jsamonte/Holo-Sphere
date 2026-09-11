@@ -1,0 +1,77 @@
+- !<AssetImportMetadata/f65cc23b-d705-4e0e-bce8-93218c560bb0>
+  ImportedAssetIds:
+    TypeScriptAsset: !<reference> ce2a6b08-3dbf-420d-bde6-a7e007bab356
+  ImporterName: TypeScriptAssetImporter
+  PrimaryAsset: !<reference> ce2a6b08-3dbf-420d-bde6-a7e007bab356
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    TypeScriptAsset: !<own> 5fd99df9-a9e4-4c87-af78-68b07505bab9
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<TypeScriptAssetData/5fd99df9-a9e4-4c87-af78-68b07505bab9>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: 160b396d-9506-4d1d-896e-211d373db38c
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    bulge: false
+    damping: false
+    debugLog: false
+    flatMemory: false
+    flattest: false
+    followHands: false
+    palmPadding: false
+    reach: false
+    stiffness: false
+    trackingGrace: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - reach: 2.500000
+      palmPadding: !<float> 1.000000
+      flatMemory: 0.600000
+      trackingGrace: 0.250000
+      flattest: 0.150000
+      bulge: 0.700000
+      followHands: true
+      stiffness: !<float> 220.000000
+      damping: !<float> 9.000000
+      debugLog: false
+  ScriptTypes:
+    -
+      {}
+  InputLines:
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Trigger</span>"}'
+    - "// @input float reach = 2.5 {\"label\":\"Reach\", \"hint\":\"How close each flat palm has to be to the sphere's centre for a squish to start, as a multiple of the sphere's radius.\", \"widget\":\"slider\", \"min\":1, \"max\":5, \"step\":0.1}"
+    - "// @input float palmPadding = 1 {\"label\":\"Palm Padding (cm)\", \"hint\":\"Distance from a tracked palm centre out to the skin of the palm. The sphere's surface is kept this far from each palm centre, so it looks pressed against the hand rather than sunk into it.\", \"widget\":\"slider\", \"min\":0, \"max\":4, \"step\":0.1}"
+    - '// @input float flatMemory = 0.6 {"label":"Flat Memory (s)", "hint":"How recently each hand must have read as flat for a squish to start. SIK only counts a hand as flat with the fingers nearly straight, so this lets a relaxed open hand that was flat a moment ago still start one.", "widget":"slider", "min":0, "max":2, "step":0.05}'
+    - '// @input float trackingGrace = 0.25 {"label":"Tracking Grace (s)", "hint":"How long a squish holds its shape if hand tracking drops out mid-squish - which happens when two hands pressed together hide each other from the cameras - before letting go.", "widget":"slider", "min":0, "max":1, "step":0.05}'
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Shape</span>"}'
+    - '// @input float flattest = 0.15 {"label":"Flattest", "hint":"How flat the sphere gets with the palms pressed together, as a fraction of its height. 0.15 is a thin pancake.", "widget":"slider", "min":0.05, "max":0.9, "step":0.01}'
+    - '// @input float bulge = 0.7 {"label":"Bulge", "hint":"How far the sphere spreads sideways as it flattens. 1 keeps its volume; 0 flattens without spreading.", "widget":"slider", "min":0, "max":1, "step":0.05}'
+    - '// @input bool followHands = true {"label":"Follow Hands", "hint":"Keep the sphere centred between the palms while it is being squished."}'
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Spring Back</span>"}'
+    - '// @input float stiffness = 220 {"label":"Stiffness", "hint":"How hard the sphere springs back to round. Higher is snappier and wobbles faster.", "widget":"slider", "min":20, "max":600, "step":5}'
+    - '// @input float damping = 9 {"label":"Wobble Damping", "hint":"How quickly the wobble dies away. Lower wobbles for longer, higher settles almost at once.", "widget":"slider", "min":1, "max":40, "step":0.5}'
+    - "// @input bool debugLog {\"label\":\"Debug Log\", \"hint\":\"Print both hands' tracking, palm state and distances twice a second, to work out why a squish is or is not starting. Leave off for a shipping build.\"}"

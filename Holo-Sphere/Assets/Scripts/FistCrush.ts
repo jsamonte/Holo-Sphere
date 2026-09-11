@@ -2,6 +2,7 @@ import {Interactable} from "../SpectaclesInteractionKit.lspkg/Components/Interac
 import {SIK} from "../SpectaclesInteractionKit.lspkg/SIK"
 import {AllHandTypes, HandType} from "../SpectaclesInteractionKit.lspkg/Providers/HandInputData/HandType"
 import {PalmState} from "../SpectaclesInteractionKit.lspkg/Providers/HandInputData/TrackedHand"
+import {isIndexExtended} from "./HandPose"
 
 export enum CrushPhase {
   /** Full size, watching for a fist. */
@@ -25,6 +26,8 @@ function easeOutCubic(t: number): number {
  *
  * SIK already classifies a closed hand: {@link PalmState} reports `Closed` once the middle knuckle
  * bends past 80 degrees, so this only has to pair that with a proximity test against the sphere.
+ * A pointing hand curls its middle finger too and so also reads as closed; with the index held out
+ * straight it is a poke at the sphere (see FingerPoke), not a fist around it, and does not crush.
  *
  * While the sphere is crushed its collider and Interactable are switched off, so it cannot be
  * pinched, dragged, thrown or split out of a state where it is not visible. They come back with it.
@@ -242,6 +245,12 @@ a fist is or is not registering. Leave off for a shipping build."
     const hand = SIK.HandInputData.getHand(handType)
 
     if (hand === null || !hand.isTracked() || hand.palmState !== PalmState.Closed) {
+      return false
+    }
+
+    // A pointing hand reads as closed too. With the index held out straight it is poking the
+    // sphere, not closing around it.
+    if (isIndexExtended(hand)) {
       return false
     }
 

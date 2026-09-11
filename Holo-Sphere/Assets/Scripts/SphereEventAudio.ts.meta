@@ -27,9 +27,11 @@
   PackagePolicy: CanBeUnpacked
   ScriptInputsHidden:
     awayTrack: false
+    compressTrack: false
     duplicateTrack: false
     loopWhileAway: false
     playOnMerge: false
+    pokeTrack: false
     returnTrack: false
     shrinkExpandTrack: false
     spatialize: false
@@ -49,6 +51,8 @@
       awayTrack: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
       returnTrack: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
       shrinkExpandTrack: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      compressTrack: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      pokeTrack: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
       volume: 0.500000
       spatialize: true
       loopWhileAway: true
@@ -65,6 +69,8 @@
     - '// @input Asset.AudioTrackAsset awayTrack {"label":"Away", "hint":"Played once the sphere reaches full extension. Assets/Audio/Yoyo.mp3."}'
     - '// @input Asset.AudioTrackAsset returnTrack {"label":"Come Back", "hint":"Played as the sphere flies home. Assets/Audio/Come Back.mp3."}'
     - '// @input Asset.AudioTrackAsset shrinkExpandTrack {"label":"Shrink Or Expand", "hint":"Played when a fist crushes the sphere away and again when it swells back out of the hand. Assets/Audio/Shrink or Expand.mp3."}'
+    - '// @input Asset.AudioTrackAsset compressTrack {"label":"Compress", "hint":"Loops for as long as two flat hands are squishing the sphere, and stops as soon as they let it go. Assets/Audio/Compress.wav."}'
+    - '// @input Asset.AudioTrackAsset pokeTrack {"label":"Poke", "hint":"Played once each time an index finger pokes into the sphere. Assets/Audio/Poke.mp3."}'
     - '// @ui {"widget":"separator"}'
     - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Playback</span>"}'
     - '// @input float volume = 0.5 {"label":"Volume", "widget":"slider", "min":0, "max":2, "step":0.05}'

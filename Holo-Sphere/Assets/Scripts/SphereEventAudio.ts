@@ -1,4 +1,6 @@
+import {FingerPoke} from "./FingerPoke"
 import {CrushPhase, FistCrush} from "./FistCrush"
+import {PalmSquish, SquishPhase} from "./PalmSquish"
 import {TwoHandSplit} from "./TwoHandSplit"
 import {YoyoFlick} from "./YoyoFlick"
 
@@ -18,6 +20,14 @@ const enum YoyoPhase {
 }
 
 /**
+ * How far flat the sphere has to be pressed, as PalmSquish's squishAmount, for the Compress loop to
+ * start, and how far it has to round back out for the loop to stop. The gap between them keeps a
+ * hand hovering right at the surface from stuttering the loop on and off.
+ */
+const COMPRESS_START = 0.05
+const COMPRESS_STOP = 0.02
+
+/**
  * Plays a one-shot sound from the sphere's position at each moment the yoyo or the split changes
  * state, through a single AudioComponent so the effects can never overlap each other.
  *
@@ -29,6 +39,9 @@ const enum YoyoPhase {
  * - **Throw.** YoyoFlick entering Throwing is the flick leaving the hand.
  * - **Away.** Entering Extended is the sphere reaching the end of the string.
  * - **Come back.** Entering Returning is it being called home.
+ * - **Compress.** The Compress sound loops for as long as two flat hands actually have the
+ *   sphere pressed in, and stops the moment it rounds back out or they let go.
+ * - **Poke.** Each new poke of a straight index finger into the sphere plays the Poke sound once.
  *
  * Watching state rather than editing YoyoFlick and TwoHandSplit to add events keeps this script
  * independent of them, at the cost of reading a private field - see {@link YoyoPhase}.
@@ -74,6 +87,21 @@ Assets/Audio/Shrink or Expand.mp3."
   @allowUndefined
   shrinkExpandTrack: AudioTrackAsset | null = null
 
+  @input
+  @label("Compress")
+  @hint(
+    "Loops for as long as two flat hands are squishing the sphere, and stops as soon as they let \
+it go. Assets/Audio/Compress.wav."
+  )
+  @allowUndefined
+  compressTrack: AudioTrackAsset | null = null
+
+  @input
+  @label("Poke")
+  @hint("Played once each time an index finger pokes into the sphere. Assets/Audio/Poke.mp3.")
+  @allowUndefined
+  pokeTrack: AudioTrackAsset | null = null
+
   @ui.separator
   @ui.label('<span style="color: #60A5FA;">Playback</span>')
 
@@ -106,10 +134,19 @@ come apart. Off leaves the merge silent."
   private yoyo: YoyoFlick | null = null
   private split: TwoHandSplit | null = null
   private crush: FistCrush | null = null
+  private squish: PalmSquish | null = null
+  private poke: FingerPoke | null = null
   private audio: AudioComponent | null = null
+
+  private wasPoked = false
 
   private lastPhase: number = YoyoPhase.Idle
   private lastCrushPhase: CrushPhase = CrushPhase.Open
+  /**
+   * Whether the Compress loop is what this component is playing. Cleared by any other effect
+   * taking over, so a compression ending can never cut off a sound that has since replaced it.
+   */
+  private compressLooping = false
 
   private duplicateObject: SceneObject | null = null
   private duplicateWasLive = false
@@ -124,10 +161,18 @@ come apart. Off leaves the merge silent."
     this.yoyo = owner.getComponent(YoyoFlick.getTypeName()) as YoyoFlick
     this.split = owner.getComponent(TwoHandSplit.getTypeName()) as TwoHandSplit
     this.crush = owner.getComponent(FistCrush.getTypeName()) as FistCrush
+    this.squish = owner.getComponent(PalmSquish.getTypeName()) as PalmSquish
+    this.poke = owner.getComponent(FingerPoke.getTypeName()) as FingerPoke
 
-    if (this.yoyo === null && this.split === null && this.crush === null) {
+    if (
+      this.yoyo === null &&
+      this.split === null &&
+      this.crush === null &&
+      this.squish === null &&
+      this.poke === null
+    ) {
       print(
-        "SphereEventAudio: no YoyoFlick, TwoHandSplit or FistCrush on " +
+        "SphereEventAudio: no YoyoFlick, TwoHandSplit, FistCrush, PalmSquish or FingerPoke on " +
           owner.name +
           ", nothing will play."
       )
@@ -148,7 +193,54 @@ come apart. Off leaves the merge silent."
   private onUpdate(): void {
     this.checkSplit()
     this.checkYoyo()
+    this.checkPoke()
+    // Before the crush, so a fist closing mid-squish silences the loop and then plays the crush.
+    this.checkSquish()
     this.checkCrush()
+  }
+
+  /** Each new poke - a finger going in, not one held there - plays the Poke sound once. */
+  private checkPoke(): void {
+    if (this.poke === null) {
+      return
+    }
+
+    const poked = this.poke.isPoked
+    if (poked && !this.wasPoked) {
+      this.playExclusive(this.pokeTrack, 1)
+    }
+    this.wasPoked = poked
+  }
+
+  /**
+   * The Compress sound loops for as long as the sphere is actually pressed in, and stops the moment
+   * it rounds back out or the hands let go.
+   *
+   * It goes by how flat the sphere is rather than by PalmSquish's phase alone: that phase begins a
+   * little before the palms reach the sphere and lasts until they are well clear of it, so the
+   * sphere can be perfectly round again while it still reads as squishing. The springy wobble after
+   * release is never Squishing, so it never restarts the loop.
+   */
+  private checkSquish(): void {
+    if (this.squish === null) {
+      return
+    }
+
+    const threshold = this.compressLooping ? COMPRESS_STOP : COMPRESS_START
+    const pressed = this.squish.squishPhase === SquishPhase.Squishing && this.squish.squishAmount > threshold
+
+    if (pressed === this.compressLooping) {
+      return
+    }
+
+    if (pressed) {
+      this.playExclusive(this.compressTrack, -1)
+      this.compressLooping = this.compressTrack != null
+      return
+    }
+
+    this.compressLooping = false
+    this.stopCurrent()
   }
 
   /**
@@ -272,6 +364,9 @@ come apart. Off leaves the merge silent."
     }
 
     this.stopCurrent()
+
+    // Whatever plays now is no longer the Compress loop; checkSquish marks it again when it is.
+    this.compressLooping = false
 
     this.audio.audioTrack = track
     this.audio.volume = this.volume
