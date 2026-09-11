@@ -2,7 +2,8 @@ import {Interactable} from "../SpectaclesInteractionKit.lspkg/Components/Interac
 import {SIK} from "../SpectaclesInteractionKit.lspkg/SIK"
 import {AllHandTypes, HandType} from "../SpectaclesInteractionKit.lspkg/Providers/HandInputData/HandType"
 import {PalmState} from "../SpectaclesInteractionKit.lspkg/Providers/HandInputData/TrackedHand"
-import {isIndexExtended} from "./HandPose"
+import {isPointingPose} from "./HandPose"
+import {SphereReach} from "./SphereReach"
 
 export enum CrushPhase {
   /** Full size, watching for a fist. */
@@ -26,8 +27,8 @@ function easeOutCubic(t: number): number {
  *
  * SIK already classifies a closed hand: {@link PalmState} reports `Closed` once the middle knuckle
  * bends past 80 degrees, so this only has to pair that with a proximity test against the sphere.
- * A pointing hand curls its middle finger too and so also reads as closed; with the index held out
- * straight it is a poke at the sphere (see FingerPoke), not a fist around it, and does not crush.
+ * A pointing hand curls its middle finger too and so also reads as closed; with only the index
+ * sticking out it is a poke at the sphere (see FingerPoke), not a fist around it, and does not crush.
  *
  * While the sphere is crushed its collider and Interactable are switched off, so it cannot be
  * pinched, dragged, thrown or split out of a state where it is not visible. They come back with it.
@@ -111,6 +112,7 @@ a fist is or is not registering. Leave off for a shipping build."
   private visual: RenderMeshVisual | null = null
   private collider: ColliderComponent | null = null
   private interactable: Interactable | null = null
+  private sphereReach: SphereReach | null = null
 
   /**
    * Where the sphere is in the crush cycle. Read by SphereEventAudio to sound the shrink and the
@@ -133,6 +135,7 @@ a fist is or is not registering. Leave off for a shipping build."
     this.collider = owner.getComponent("Component.ColliderComponent")
 
     this.interactable = owner.getComponent(Interactable.getTypeName()) as Interactable
+    this.sphereReach = owner.getComponent(SphereReach.getTypeName()) as SphereReach
 
     this.createEvent("UpdateEvent").bind(() => this.onUpdate())
   }
@@ -195,8 +198,6 @@ a fist is or is not registering. Leave off for a shipping build."
    * traced to the specific condition that is not met rather than guessed at.
    */
   private logHands(): void {
-    const position = this.getSceneObject().getTransform().getWorldPosition()
-
     for (let i = 0; i < AllHandTypes.length; i++) {
       const handType = AllHandTypes[i]
       const hand = SIK.HandInputData.getHand(handType)
@@ -224,7 +225,7 @@ a fist is or is not registering. Leave off for a shipping build."
         continue
       }
 
-      const distance = palm.distance(position)
+      const distance = this.distanceToSphere(palm)
 
       print(
         "FistCrush [" +
@@ -248,9 +249,9 @@ a fist is or is not registering. Leave off for a shipping build."
       return false
     }
 
-    // A pointing hand reads as closed too. With the index held out straight it is poking the
-    // sphere, not closing around it.
-    if (isIndexExtended(hand)) {
+    // A pointing hand reads as closed too. With only the index sticking out it is poking the sphere,
+    // not closing around it. A fist whose index merely reads as straight still crushes.
+    if (isPointingPose(hand)) {
       return false
     }
 
@@ -259,9 +260,19 @@ a fist is or is not registering. Leave off for a shipping build."
       return false
     }
 
-    const position = this.getSceneObject().getTransform().getWorldPosition()
+    return this.distanceToSphere(palm) <= this.reach()
+  }
 
-    return palm.distance(position) <= this.reach()
+  /**
+   * Distance from a palm to the sphere's reach - its centre stretched out towards the player by
+   * SphereReach - so a fist closing a little short in front of the sphere still takes it. Without a
+   * SphereReach, the distance to the centre.
+   */
+  private distanceToSphere(point: vec3): number {
+    if (this.sphereReach !== null) {
+      return this.sphereReach.distanceTo(point)
+    }
+    return point.distance(this.getSceneObject().getTransform().getWorldPosition())
   }
 
   /**

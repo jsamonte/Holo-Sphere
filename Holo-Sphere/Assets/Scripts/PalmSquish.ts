@@ -3,6 +3,8 @@ import {InteractorInputType} from "../SpectaclesInteractionKit.lspkg/Core/Intera
 import TrackedHand, {PalmState} from "../SpectaclesInteractionKit.lspkg/Providers/HandInputData/TrackedHand"
 import {SIK} from "../SpectaclesInteractionKit.lspkg/SIK"
 import {CrushPhase, FistCrush} from "./FistCrush"
+import {isIndexExtended} from "./HandPose"
+import {SphereReach} from "./SphereReach"
 import {TwoHandSplit} from "./TwoHandSplit"
 import {YoyoFlick} from "./YoyoFlick"
 
@@ -157,6 +159,7 @@ is or is not starting. Leave off for a shipping build."
   private crush: FistCrush | null = null
   private yoyo: YoyoFlick | null = null
   private split: TwoHandSplit | null = null
+  private sphereReach: SphereReach | null = null
 
   private logTimer = 0
 
@@ -192,6 +195,7 @@ is or is not starting. Leave off for a shipping build."
     this.crush = owner.getComponent(FistCrush.getTypeName()) as FistCrush
     this.yoyo = owner.getComponent(YoyoFlick.getTypeName()) as YoyoFlick
     this.split = owner.getComponent(TwoHandSplit.getTypeName()) as TwoHandSplit
+    this.sphereReach = owner.getComponent(SphereReach.getTypeName()) as SphereReach
 
     this.createEvent("UpdateEvent").bind(() => this.onUpdate())
   }
@@ -377,7 +381,11 @@ is or is not starting. Leave off for a shipping build."
     let axis = between.uniformScale(1 / length)
 
     if (!engaged) {
-      const centre = this.getTransform().getWorldPosition()
+      // The point of the sphere's reach nearest the palms: its centre, or somewhere along its stretch
+      // towards the player (see SphereReach) when the hands close a little in front of the sphere.
+      const between = a.add(b).uniformScale(0.5)
+      const centre =
+        this.sphereReach !== null ? this.sphereReach.nearestPoint(between) : this.getTransform().getWorldPosition()
       const radius = this.radius()
 
       if (a.distance(centre) > radius * this.reach || b.distance(centre) > radius * this.reach) {
@@ -411,10 +419,10 @@ is or is not starting. Leave off for a shipping build."
   /**
    * SIK only calls a palm Flat with the middle finger within 30 degrees of straight, and a relaxed
    * open hand - especially one pressed against the other - often sits just outside that. So a squish
-   * starts from a hand that is open, not pinching, and read Flat within the last Flat Memory seconds,
-   * rather than needing both hands to read Flat on the very same frame. The pinch check keeps a two
-   * handed pinch for the split from being taken for a squish. Once under way, only a fist or lost
-   * tracking counts against a hand.
+   * starts from a hand that is open and not pinching: one that read Flat within the last Flat Memory
+   * seconds, or one that SIK never quite called Flat but that has its index finger straight and is
+   * not a fist. The pinch check keeps a two handed pinch for the split from being taken for a
+   * squish. Once under way, only a fist or lost tracking counts against a hand.
    */
   private palmUsable(hand: TrackedHand, engaged: boolean): boolean {
     if (hand === null || !hand.isTracked() || hand.palmState === PalmState.Closed) {
@@ -423,8 +431,11 @@ is or is not starting. Leave off for a shipping build."
     if (engaged) {
       return true
     }
+    if (hand.isPinching()) {
+      return false
+    }
     const lastFlat = this.lastFlatTime.get(hand.handType) ?? -1000
-    return !hand.isPinching() && getTime() - lastFlat <= this.flatMemory
+    return getTime() - lastFlat <= this.flatMemory || isIndexExtended(hand)
   }
 
   /** Notes the last moment each hand read Flat, for {@link palmUsable}. */

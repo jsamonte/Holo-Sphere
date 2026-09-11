@@ -125,7 +125,7 @@
       value: {x: 1.000000, y: 1.000000, z: 1.000000}
     Port_Emissive_N006:
       typeIdx: 4
-      value: {x: 0.050000, y: 0.500000, z: 0.620000}
+      value: {x: 0.025000, y: 0.250000, z: 0.310000}
     Port_Input1_N011:
       typeIdx: 1
       value: 2.000000
@@ -149,7 +149,7 @@
       value: 1.000000
     Port_Opacity_N006:
       typeIdx: 1
-      value: 0.100000
+      value: 0.030000
     Port_RangeMaxA_N049:
       typeIdx: 1
       value: 1.000000

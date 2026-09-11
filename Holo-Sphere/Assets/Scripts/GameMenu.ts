@@ -139,8 +139,14 @@ export class GameMenu extends BaseScriptComponent {
   @ui.separator
   @ui.label('<span style="color: #60A5FA;">Music</span>')
   @ui.label(
-    '<span style="color: #94A3B8; font-size: 11px;">One bed per difficulty. Loops until the run ends.</span>'
+    '<span style="color: #94A3B8; font-size: 11px;">Menu Music loops while the menu is up. Each mode\'s bed loops until its run ends.</span>'
   )
+
+  @input
+  @label("Menu Music")
+  @hint("Loops for as long as the menu is showing, and stops the moment a mode is chosen.")
+  @allowUndefined
+  menuMusic: AudioTrackAsset | null = null
 
   @input @label("Tutorial Music") @allowUndefined tutorialMusic: AudioTrackAsset | null = null
   @input @label("Easy Music") @allowUndefined easyMusic: AudioTrackAsset | null = null
@@ -1028,6 +1034,16 @@ slightly off the beat on device."
     // mid-split would otherwise leave it floating in front of the menu.
     if (visible && this.duplicateIsLive()) {
       this.duplicateObject!.enabled = false
+    }
+
+    // Menu music belongs to the menu: on while it is up, off the moment it goes. Stopped here
+    // rather than left for the mode's own song to replace, because a mode with no song assigned
+    // would otherwise carry the menu track into the run - and the rhythm game would then read its
+    // beat clock off the menu song instead of the mode's.
+    if (visible) {
+      this.playMusic(this.menuMusic)
+    } else {
+      this.stopMusic()
     }
   }
 

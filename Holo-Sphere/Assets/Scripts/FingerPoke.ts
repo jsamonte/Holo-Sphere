@@ -4,34 +4,51 @@ import {AllHandTypes, HandType} from "../SpectaclesInteractionKit.lspkg/Provider
 import TrackedHand, {PalmState} from "../SpectaclesInteractionKit.lspkg/Providers/HandInputData/TrackedHand"
 import {SIK} from "../SpectaclesInteractionKit.lspkg/SIK"
 import {CrushPhase, FistCrush} from "./FistCrush"
-import {isIndexExtended} from "./HandPose"
+import {isIndexExtended, isPointingPose} from "./HandPose"
 import {PalmSquish, SquishPhase} from "./PalmSquish"
+import {SphereReach} from "./SphereReach"
 import {TwoHandSplit} from "./TwoHandSplit"
 import {YoyoFlick} from "./YoyoFlick"
 
 /**
  * Pinch strength (0 hand at rest, 1 fingertips touching) from which a hand counts as closing into
- * a pinch. isPinching only turns true once the pinch has closed, which is too late to tell a hand
- * reaching in to pinch from one poking.
+ * a pinch. Kept high: a pointing hand with its thumb tucked in can read well above halfway.
  */
-const PINCHING_STRENGTH = 0.5
+const PINCHING_STRENGTH = 0.8
+
+/** Shortest time a finger has to be in for a quick jab to count, rather than a brush. */
+const JAB_MIN = 0.04
+
+/** How long after a quick jab to wait, making sure it was not the start of a pinch, before it counts. */
+const JAB_CONFIRM = 0.1
+
+/** How long a confirmed quick jab reads as poked, so its sound and shake are heard and seen. */
+const JAB_PULSE = 0.25
 
 /**
  * Poke the sphere with an index finger.
  *
- * A poke is an index fingertip pushed in past the sphere's surface with the finger held out
- * straight, as in pointing. A pinching hand - or one closing into a pinch - and a flat palm never
- * count, and neither does a bent finger, so the fingertips that end up inside the sphere during a
- * grab, a squish or a crush are not taken for pokes.
+ * A poke is an index fingertip pushed in past the sphere's surface with only the index sticking out:
+ * held straight, with the middle, ring and little fingers folded away. A whole hand at the sphere -
+ * open, or closing into the fist that collapses it - never counts, nor does a pinching hand or a bent
+ * finger, so the fingertips that end up inside the sphere during a grab or a crush are not taken for
+ * pokes. Nor does anything count while the other hand is open beside the sphere, which is two hands
+ * setting up a compress.
  *
- * A hand reaching in to pinch the sphere still points its index straight for a moment before the
- * thumb closes, and a finger can still be inside when a pinch lets go. So a finger has to stay in
- * for Poke Delay before it counts - a pinch starting in that time cancels it - and a hand cannot
- * poke for Pinch Cooldown after it was pinching, or after the sphere was last busy with another move.
+ * A hand reaching in to pinch still points its index straight for a moment before the thumb closes,
+ * so a poke is recognised one of two ways:
  *
- * The sphere is only watched, never moved. {@link isPoked} is true for as long as a finger is in,
- * so each new poke is its rising edge - which is how GameMenu counts Poke It and SphereEventAudio
- * and PokeShake sound and show it. It does not register while the sphere is busy with another move:
+ * - **Held.** A finger that stays in for Poke Delay is poking, for as long as it stays in.
+ * - **Jab.** A quicker in-and-out counts once the finger is out again, provided no pinch follows in
+ *   the moment after, and then reads as poked for a short pulse.
+ *
+ * A pinch starting while the finger is in cancels either, and a hand cannot poke for Pinch Cooldown
+ * after it was pinching, or after the sphere was last busy with another move - so a finger still
+ * inside when a pinch lets go does not count.
+ *
+ * The sphere is only watched, never moved. {@link isPoked} is true for as long as a poke lasts, so
+ * each new poke is its rising edge - which is how GameMenu counts Poke It and SphereEventAudio and
+ * PokeShake sound and show it. It does not register while the sphere is busy with another move:
  * pinched, split, out on the yoyo, crushed or squished.
  */
 @component
@@ -51,8 +68,8 @@ sphere's radius. 0 counts at the surface; higher needs a deeper poke."
   @input
   @label("Poke Delay (s)")
   @hint(
-    "How long a straight finger has to stay in the sphere before it counts as a poke, so a hand \
-reaching in to pinch is not taken for one. A pinch starting in that time cancels the poke."
+    "How long a finger has to stay in the sphere to count while still in it. Quicker jabs still \
+count, once the finger comes back out without a pinch following."
   )
   @widget(new SliderWidget(0, 1, 0.05))
   pokeDelay: number = 0.3
@@ -80,6 +97,12 @@ registering. Leave off for a shipping build."
   /** Seconds each hand's finger has been in the sphere, pointing, without a break. */
   private insideTime = new Map<string, number>()
 
+  /** Seconds left before each hand's quick jab confirms, or 0 when there is none waiting. */
+  private jabWait = new Map<string, number>()
+
+  /** Seconds left of each hand's confirmed jab reading as poked. */
+  private jabPulse = new Map<string, number>()
+
   /** The last moment each hand was pinching or closing into a pinch. */
   private lastPinchTime = new Map<string, number>()
 
@@ -91,8 +114,9 @@ registering. Leave off for a shipping build."
   private squish: PalmSquish | null = null
   private yoyo: YoyoFlick | null = null
   private split: TwoHandSplit | null = null
+  private reach: SphereReach | null = null
 
-  /** True while an index finger is poked into the sphere. */
+  /** True while an index finger is poking the sphere. */
   get isPoked(): boolean {
     return this.poked
   }
@@ -104,6 +128,8 @@ registering. Leave off for a shipping build."
     this.createEvent("OnDisableEvent").bind(() => {
       this.poked = false
       this.insideTime.clear()
+      this.jabWait.clear()
+      this.jabPulse.clear()
     })
   }
 
@@ -115,6 +141,7 @@ registering. Leave off for a shipping build."
     this.squish = owner.getComponent(PalmSquish.getTypeName()) as PalmSquish
     this.yoyo = owner.getComponent(YoyoFlick.getTypeName()) as YoyoFlick
     this.split = owner.getComponent(TwoHandSplit.getTypeName()) as TwoHandSplit
+    this.reach = owner.getComponent(SphereReach.getTypeName()) as SphereReach
 
     this.createEvent("UpdateEvent").bind(() => this.onUpdate())
   }
@@ -140,15 +167,47 @@ registering. Leave off for a shipping build."
     for (let i = 0; i < AllHandTypes.length; i++) {
       const handType = AllHandTypes[i]
       const hand = SIK.HandInputData.getHand(handType)
+      const other = SIK.HandInputData.getHand(AllHandTypes[(i + 1) % AllHandTypes.length])
+      const closing = this.isClosingToPinch(hand)
 
-      if (this.isClosingToPinch(hand)) {
+      if (closing) {
         this.lastPinchTime.set(handType, now)
       }
 
-      // Counted up only while the finger stays in without a break, so a finger that brushes the
-      // sphere on its way to a pinch never gets there.
-      const held = !busy && this.fingerIn(hand, handType, now) ? (this.insideTime.get(handType) ?? 0) + deltaTime : 0
+      // Counted up only while the finger stays in without a break.
+      const was = this.insideTime.get(handType) ?? 0
+      const inNow = !busy && this.fingerIn(hand, other, handType, now)
+      const held = inNow ? was + deltaTime : 0
       this.insideTime.set(handType, held)
+
+      // Out again before Poke Delay, and not because a pinch closed on it: a quick jab, which counts
+      // once it is clear no pinch is following. The fingertip has to have actually left - a finger
+      // that stops pointing while still inside is a hand curling into a fist, not a jab.
+      const fisting = this.isFisting(hand)
+      if (!inNow && was >= JAB_MIN && was < this.pokeDelay && !closing && !busy && !fisting && this.tipDepth(hand) < this.depth) {
+        this.jabWait.set(handType, JAB_CONFIRM)
+      }
+
+      let wait = this.jabWait.get(handType) ?? 0
+      if (wait > 0) {
+        if (closing || busy || fisting) {
+          wait = 0
+        } else {
+          wait -= deltaTime
+          if (wait <= 0) {
+            wait = 0
+            this.jabPulse.set(handType, JAB_PULSE)
+          }
+        }
+        this.jabWait.set(handType, wait)
+      }
+
+      let pulse = busy ? 0 : this.jabPulse.get(handType) ?? 0
+      if (pulse > 0) {
+        pulse = Math.max(0, pulse - deltaTime)
+        poked = true
+      }
+      this.jabPulse.set(handType, pulse)
 
       if (held >= this.pokeDelay) {
         poked = true
@@ -158,8 +217,8 @@ registering. Leave off for a shipping build."
     this.poked = poked
   }
 
-  private fingerIn(hand: TrackedHand, handType: HandType, now: number): boolean {
-    if (!this.isPointing(hand)) {
+  private fingerIn(hand: TrackedHand, other: TrackedHand, handType: HandType, now: number): boolean {
+    if (!this.isPointing(hand) || this.isSettingUpCompress(other)) {
       return false
     }
     if (now - (this.lastPinchTime.get(handType) ?? -1000) < this.pinchCooldown) {
@@ -171,18 +230,29 @@ registering. Leave off for a shipping build."
     return this.tipDepth(hand) >= this.depth
   }
 
-  /** Tracked, index held out straight, not pinching or closing into one, and not a flat palm. */
+  /** Tracked, only the index sticking out, and not pinching or closing into one. */
   private isPointing(hand: TrackedHand): boolean {
-    return (
-      hand !== null &&
-      hand.isTracked() &&
-      !this.isClosingToPinch(hand) &&
-      hand.palmState !== PalmState.Flat &&
-      isIndexExtended(hand)
-    )
+    return hand !== null && hand.isTracked() && !this.isClosingToPinch(hand) && isPointingPose(hand)
   }
 
-  /** Pinching, or far enough into one that it is on its way. */
+  /** Closed into a fist - the collapse - rather than pointing. */
+  private isFisting(hand: TrackedHand): boolean {
+    return hand !== null && hand.isTracked() && hand.palmState === PalmState.Closed && !isPointingPose(hand)
+  }
+
+  /**
+   * The other hand open beside the sphere: the two hands are setting up a compress, and fingertips
+   * that stray into the sphere on the way are not pokes.
+   */
+  private isSettingUpCompress(other: TrackedHand): boolean {
+    if (other === null || !other.isTracked() || other.palmState === PalmState.Closed || other.isPinching()) {
+      return false
+    }
+    const palm = other.getPalmCenter()
+    return palm !== null && this.reachDistance(palm) <= this.radius() * 2.5
+  }
+
+  /** Pinching, or nearly closed into one. */
   private isClosingToPinch(hand: TrackedHand): boolean {
     if (hand === null || !hand.isTracked()) {
       return false
@@ -200,7 +270,19 @@ registering. Leave off for a shipping build."
       return -1
     }
     const radius = this.radius()
-    return (radius - tip.distance(this.getTransform().getWorldPosition())) / radius
+    return (radius - this.reachDistance(tip)) / radius
+  }
+
+  /**
+   * Distance from a point to the sphere's reach - its centre stretched out towards the player by
+   * SphereReach - so a finger or palm that stops a little short in front of the sphere still counts.
+   * Without a SphereReach, the distance to the centre.
+   */
+  private reachDistance(point: vec3): number {
+    if (this.reach !== null) {
+      return this.reach.distanceTo(point)
+    }
+    return point.distance(this.getTransform().getWorldPosition())
   }
 
   /** The sphere mesh is a unit sphere, so its radius is half its largest world scale axis. */
@@ -238,35 +320,37 @@ registering. Leave off for a shipping build."
     for (let i = 0; i < AllHandTypes.length; i++) {
       const handType = AllHandTypes[i]
       const hand = SIK.HandInputData.getHand(handType)
+      const other = SIK.HandInputData.getHand(AllHandTypes[(i + 1) % AllHandTypes.length])
 
       if (hand === null || !hand.isTracked()) {
         print("FingerPoke [" + handType + "] not tracked")
         continue
       }
 
-      const state = hand.palmState === PalmState.Flat ? "Flat" : hand.palmState === PalmState.Closed ? "Closed" : "None"
       const sincePinch = now - (this.lastPinchTime.get(handType) ?? -1000)
       print(
         "FingerPoke [" +
           handType +
           "] indexStraight=" +
           isIndexExtended(hand) +
+          " onlyIndexOut=" +
+          isPointingPose(hand) +
           " pinchStrength=" +
           (hand.getPinchStrength() ?? 0).toFixed(2) +
-          " palm=" +
-          state +
+          " otherHandCompressing=" +
+          this.isSettingUpCompress(other) +
           " tipDepth=" +
           this.tipDepth(hand).toFixed(2) +
           " need>=" +
           this.depth.toFixed(2) +
           " heldIn=" +
           (this.insideTime.get(handType) ?? 0).toFixed(2) +
-          "s need>=" +
-          this.pokeDelay.toFixed(2) +
-          " sincePinch=" +
+          "s sincePinch=" +
           Math.min(sincePinch, 99).toFixed(1) +
           "s busy=" +
-          this.isBusy()
+          this.isBusy() +
+          " poked=" +
+          this.poked
       )
     }
   }

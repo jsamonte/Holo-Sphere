@@ -67,6 +67,7 @@
     mediumMusic: false
     mediumOrderCount: false
     mediumStartDelay: false
+    menuMusic: false
     menuRoot: false
     musicVolume: false
     orderCount: false
@@ -96,6 +97,7 @@
       easyButton: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       mediumButton: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       hardButton: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      menuMusic: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
       tutorialMusic: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
       easyMusic: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
       mediumMusic: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
@@ -160,7 +162,8 @@
     - '// @input SceneObject hardButton {"label":"Hard Button"}'
     - '// @ui {"widget":"separator"}'
     - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Music</span>"}'
-    - '// @ui {"widget":"label", "label":"<span style=\"color: #94A3B8; font-size: 11px;\">One bed per difficulty. Loops until the run ends.</span>"}'
+    - "// @ui {\"widget\":\"label\", \"label\":\"<span style=\\\"color: #94A3B8; font-size: 11px;\\\">Menu Music loops while the menu is up. Each mode's bed loops until its run ends.</span>\"}"
+    - '// @input Asset.AudioTrackAsset menuMusic {"label":"Menu Music", "hint":"Loops for as long as the menu is showing, and stops the moment a mode is chosen."}'
     - '// @input Asset.AudioTrackAsset tutorialMusic {"label":"Tutorial Music"}'
     - '// @input Asset.AudioTrackAsset easyMusic {"label":"Easy Music"}'
     - '// @input Asset.AudioTrackAsset mediumMusic {"label":"Medium Music"}'

@@ -10,6 +10,7 @@ import {InteractorEvent} from "../SpectaclesInteractionKit.lspkg/Core/Interactor
 import {AllHandTypes, HandType} from "../SpectaclesInteractionKit.lspkg/Providers/HandInputData/HandType"
 import TrackedHand from "../SpectaclesInteractionKit.lspkg/Providers/HandInputData/TrackedHand"
 import {SIK} from "../SpectaclesInteractionKit.lspkg/SIK"
+import {SphereReach} from "./SphereReach"
 import {StrobeGhostTrail} from "./StrobeGhostTrail"
 import {YoyoFlick} from "./YoyoFlick"
 
@@ -198,6 +199,7 @@ world scale. Keep it below Split Pop so the sphere does not split and merge on a
   private manipulation: InteractableManipulation | null = null
   private trail: StrobeGhostTrail | null = null
   private yoyo: YoyoFlick | null = null
+  private sphereReach: SphereReach | null = null
   private mainVisual: RenderMeshVisual | null = null
 
   private halfA: Half | null = null
@@ -245,6 +247,7 @@ world scale. Keep it below Split Pop so the sphere does not split and merge on a
     this.manipulation = this.getSceneObject().getComponent(InteractableManipulation.getTypeName())
     this.trail = this.getSceneObject().getComponent(StrobeGhostTrail.getTypeName())
     this.yoyo = this.getSceneObject().getComponent(YoyoFlick.getTypeName())
+    this.sphereReach = this.getSceneObject().getComponent(SphereReach.getTypeName()) as SphereReach
 
     this.homeScale = this.getTransform().getWorldScale()
     this.halfA = this.buildHalf(this.getSceneObject(), this.mainVisual)
@@ -397,8 +400,14 @@ world scale. Keep it below Split Pop so the sphere does not split and merge on a
         continue
       }
 
+      // Measured to the sphere's reach - its centre stretched out towards the player by SphereReach -
+      // so a pinch landing a little short in front of the sphere still takes hold.
       const reach = this.sphereSize() * 0.5 * this.secondHandReach
-      if (point.distance(this.halfA!.transform.getWorldPosition()) > reach) {
+      const distance =
+        this.sphereReach !== null
+          ? this.sphereReach.distanceTo(point)
+          : point.distance(this.halfA!.transform.getWorldPosition())
+      if (distance > reach) {
         continue
       }
 
