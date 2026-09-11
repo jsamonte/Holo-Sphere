@@ -32,6 +32,7 @@
     mirrorAppearance: false
     mirrorTrail: false
     opacityPort: false
+    secondHandReach: false
     secondSphere: false
     splitDuration: false
     splitPop: false
@@ -47,6 +48,7 @@
     []
   DefaultScriptInputs:
     - splitTravel: 0.800000
+      secondHandReach: 2.200000
       splitPop: 0.500000
       splitDuration: 0.180000
       splitScale: !<float> 1.000000
@@ -64,6 +66,7 @@
     - '// @ui {"widget":"separator"}'
     - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Split</span>"}'
     - "// @input float splitTravel = 0.8 {\"label\":\"Split Travel\", \"hint\":\"How much further the hands must pull apart before the sphere splits, as a fraction of the sphere's world scale. Higher values need a longer pull.\", \"widget\":\"slider\", \"min\":0.1, \"max\":3, \"step\":0.05}"
+    - "// @input float secondHandReach = 2.2 {\"label\":\"Second Hand Reach\", \"hint\":\"While one hand holds the sphere, how close the other hand's pinch must start to the sphere to grab it too, as a multiple of the sphere's radius. 1 means at the surface; the default roughly matches the sphere's grab collider.\", \"widget\":\"slider\", \"min\":0.5, \"max\":4, \"step\":0.1}"
     - "// @input float splitPop = 0.5 {\"label\":\"Split Pop\", \"hint\":\"Extra push apart applied when the sphere duplicates, as a fraction of the sphere's world scale. Set to 0 for the halves to separate only as fast as the hands do.\", \"widget\":\"slider\", \"min\":0, \"max\":2, \"step\":0.05}"
     - '// @input float splitDuration = 0.18 {"label":"Split Time (s)", "hint":"How long the halves take to push apart once the split fires.", "widget":"slider", "min":0.05, "max":1, "step":0.01}'
     - '// @input float splitScale = 1 {"label":"Split Scale", "hint":"Size of each half while the sphere is apart, relative to the whole sphere. 1 keeps both copies full size.", "widget":"slider", "min":0.25, "max":1, "step":0.05}'

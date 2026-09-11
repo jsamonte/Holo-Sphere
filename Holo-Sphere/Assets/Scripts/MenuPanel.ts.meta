@@ -22,11 +22,16 @@
   VersionMajor: 0
   VersionMinor: 0
   VersionPatch: 0
-  ComponentUid: 00000000-0000-0000-0000-000000000000
+  ComponentUid: 7f20416a-f4cd-4b23-a512-f3a942438b1e
   ExportUid: 00000000-0000-0000-0000-000000000000
   PackagePolicy: CanBeUnpacked
   ScriptInputsHidden:
-    {}
+    color: false
+    depth: false
+    height: false
+    opacity: false
+    opacityPort: false
+    width: false
   ScriptTypesHidden:
     {}
   ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
@@ -36,10 +41,23 @@
   Attachments:
     []
   DefaultScriptInputs:
-    -
-      {}
+    - color: !<Vec4> {x: 0.880000, y: 0.890000, z: 0.910000, w: 1.000000}
+      opacity: 0.300000
+      opacityPort: Port_Opacity_N006
+      width: !<float> 26.000000
+      height: !<float> 48.000000
+      depth: !<float> 1.000000
   ScriptTypes:
     -
       {}
   InputLines:
-    []
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Look</span>"}'
+    - "// @input vec4 color = \"{0.88, 0.89, 0.91, 1}\" {\"label\":\"Color\", \"hint\":\"Tint of the panel. Matches the sphere's silver rest colour by default.\", \"widget\":\"color\"}"
+    - "// @input float opacity = 0.3 {\"label\":\"Opacity\", \"hint\":\"How solid the panel is. Keep it low so the buttons' text stands out in front of it.\", \"widget\":\"slider\", \"min\":0, \"max\":1, \"step\":0.01}"
+    - "// @input string opacityPort = \"Port_Opacity_N006\" {\"label\":\"Opacity Port\", \"hint\":\"Name of the opacity (float) port on the material. Matches the sphere's Iridescence material.\"}"
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Size</span>"}'
+    - '// @input float width = 26 {"label":"Width (cm)", "widget":"slider", "min":5, "max":100, "step":0.5}'
+    - '// @input float height = 48 {"label":"Height (cm)", "widget":"slider", "min":5, "max":100, "step":0.5}'
+    - '// @input float depth = 1 {"label":"Depth Behind Buttons (cm)", "hint":"How far behind the buttons the panel sits, so the text is always drawn in front of it.", "widget":"slider", "min":0, "max":10, "step":0.1}'

@@ -2,10 +2,14 @@ import {Interactable} from "../SpectaclesInteractionKit.lspkg/Components/Interac
 import {InteractableManipulation} from "../SpectaclesInteractionKit.lspkg/Components/Interaction/InteractableManipulation/InteractableManipulation"
 import {
   Interactor,
+  InteractorInputType,
   InteractorTriggerType,
   TargetingMode
 } from "../SpectaclesInteractionKit.lspkg/Core/Interactor/Interactor"
 import {InteractorEvent} from "../SpectaclesInteractionKit.lspkg/Core/Interactor/InteractorEvent"
+import {AllHandTypes, HandType} from "../SpectaclesInteractionKit.lspkg/Providers/HandInputData/HandType"
+import TrackedHand from "../SpectaclesInteractionKit.lspkg/Providers/HandInputData/TrackedHand"
+import {SIK} from "../SpectaclesInteractionKit.lspkg/SIK"
 import {StrobeGhostTrail} from "./StrobeGhostTrail"
 import {YoyoFlick} from "./YoyoFlick"
 
@@ -37,11 +41,13 @@ enum SplitState {
 /**
  * Lets a sphere be torn in two with both hands and put back together again.
  *
- * Grab the sphere with both hands and pull them apart. Once the hands have separated past
- * Split Travel the sphere duplicates: each hand carries its own copy, held at the same offset
- * from the pinch it grabbed with, so a copy stays stuck to the hand that pulled it out. Bring the
- * hands back together until the two copies overlap, or simply let go with one or both hands, and
- * the copies converge on the point midway between them and become a single sphere again.
+ * Grab the sphere with both hands and pull them apart. The hands do not have to take hold together:
+ * pinching the sphere with one hand and then reaching in and pinching it with the other works just
+ * the same. Once the hands have separated past Split Travel the sphere duplicates: each hand carries
+ * its own copy, held at the same offset from the pinch it grabbed with, so a copy stays stuck to the
+ * hand that pulled it out. Bring the hands back together until the two copies overlap, or simply let
+ * go with one or both hands, and the copies converge on the point midway between them and become a
+ * single sphere again.
  *
  * While the sphere is whole it is dragged by its InteractableManipulation as usual. Translation on
  * that component is switched off for as long as the sphere is split, since the two halves follow
@@ -70,6 +76,20 @@ sphere's world scale. Higher values need a longer pull."
   )
   @widget(new SliderWidget(0.1, 3, 0.05))
   splitTravel: number = 0.8
+
+  /**
+   * How close a second hand's pinch has to start to the sphere for it to take hold while the first
+   * hand is already holding on. See {@link watchSecondHand} for why this is needed at all.
+   */
+  @input
+  @label("Second Hand Reach")
+  @hint(
+    "While one hand holds the sphere, how close the other hand's pinch must start to the sphere to \
+grab it too, as a multiple of the sphere's radius. 1 means at the surface; the default roughly matches \
+the sphere's grab collider."
+  )
+  @widget(new SliderWidget(0.5, 4, 0.1))
+  secondHandReach: number = 2.2
 
   /**
    * Extra separation added between the halves at the moment of the split, on top of whatever the
@@ -199,6 +219,9 @@ world scale. Keep it below Split Pop so the sphere does not split and merge on a
   /** Translation setting to hand back to InteractableManipulation once the halves merge. */
   private manipulationCouldTranslate = true
 
+  /** Whether each hand was pinching last frame, so a second hand's pinch is caught as it starts. */
+  private wasPinching = new Map<string, boolean>()
+
   onAwake(): void {
     this.createEvent("OnStartEvent").bind(() => this.init())
     this.createEvent("OnDestroyEvent").bind(() => this.destroySecondSphere())
@@ -318,15 +341,75 @@ world scale. Keep it below Split Pop so the sphere does not split and merge on a
   private pruneHeld(): void {
     for (let i = this.held.length - 1; i >= 0; i--) {
       const interactor = this.held[i]
-      if (!interactor.isActive() || interactor.currentTrigger === InteractorTriggerType.None) {
+      if (!this.stillHolding(interactor)) {
         this.release(interactor)
       }
+    }
+  }
+
+  /**
+   * A hand that took hold through {@link watchSecondHand} never started a trigger on the sphere, so
+   * SIK reports no trigger for it and will never send it a trigger end either - its own pinch is what
+   * says it is still holding. Either signal is enough, so a hand SIK did see keeps its old behaviour.
+   */
+  private stillHolding(interactor: Interactor): boolean {
+    if (!interactor.isActive()) {
+      return false
+    }
+
+    const hand = this.handOf(interactor)
+    if (hand !== null && hand.isPinching()) {
+      return true
+    }
+
+    return interactor.currentTrigger !== InteractorTriggerType.None
+  }
+
+  /**
+   * SIK only starts a trigger on the sphere if the pinching hand was already targeting it on the
+   * frame the pinch began, and it then keeps that hand's targeting locked for the rest of the pinch.
+   * The sphere only accepts direct targeting, so a hand reaching in beside the one already holding
+   * on - usually still in its pointing pose, on its ray - pinches on nothing and is never reported
+   * here. Grabbing with both hands at once works because both are already resting on the sphere.
+   *
+   * So while exactly one hand holds the sphere, the other is watched directly: a pinch that starts
+   * within Second Hand Reach of the sphere counts as that hand taking hold.
+   */
+  private watchSecondHand(): void {
+    for (let i = 0; i < AllHandTypes.length; i++) {
+      const handType = AllHandTypes[i]
+      const hand = SIK.HandInputData.getHand(handType)
+      const pinching = hand !== null && hand.isTracked() && hand.isPinching()
+      const started = pinching && !(this.wasPinching.get(handType) ?? false)
+      this.wasPinching.set(handType, pinching)
+
+      if (!started || this.held.length !== 1 || this.state !== SplitState.Idle) {
+        continue
+      }
+
+      const interactor = this.handInteractor(handType)
+      if (interactor === null || this.held.indexOf(interactor) >= 0) {
+        continue
+      }
+
+      const point = this.handPinchPoint(hand)
+      if (point === null) {
+        continue
+      }
+
+      const reach = this.sphereSize() * 0.5 * this.secondHandReach
+      if (point.distance(this.halfA!.transform.getWorldPosition()) > reach) {
+        continue
+      }
+
+      this.grab(interactor)
     }
   }
 
   private onUpdate(): void {
     const deltaTime = getDeltaTime()
     this.pruneHeld()
+    this.watchSecondHand()
 
     // A two handed grab is a split, never a flick, and the yoyo drives the same transform - so it
     // is stood down for as long as both hands are on the sphere or the halves are apart.
@@ -524,14 +607,58 @@ world scale. Keep it below Split Pop so the sphere does not split and merge on a
   }
 
   /**
-   * A direct pinch is held at the fingertips, so that is the point the sphere hangs off; an
-   * indirect one is aimed from the ray's origin instead.
+   * Where a hand is holding the sphere. A tracked hand's own pinch - between the index and thumb
+   * tips - is used whenever there is one: a hand that took hold through {@link watchSecondHand} may
+   * still be on its ray, whose points lie out along the ray rather than at the fingers.
+   *
+   * Anything that is not a hand, such as the mouse in the editor, falls back to the interactor: a
+   * direct pinch is held at the fingertips, an indirect one from the ray's origin.
    */
   private interactorPoint(interactor: Interactor): vec3 | null {
+    const hand = this.handOf(interactor)
+    if (hand !== null) {
+      const pinch = this.handPinchPoint(hand)
+      if (pinch !== null) {
+        return pinch
+      }
+    }
+
     if (interactor.activeTargetingMode === TargetingMode.Direct) {
       return interactor.endPoint ?? interactor.startPoint
     }
     return interactor.startPoint ?? interactor.endPoint
+  }
+
+  /** The tracked hand behind a hand interactor, or null for anything else. */
+  private handOf(interactor: Interactor): TrackedHand | null {
+    if (interactor.inputType === InteractorInputType.LeftHand) {
+      return SIK.HandInputData.getHand("left")
+    }
+    if (interactor.inputType === InteractorInputType.RightHand) {
+      return SIK.HandInputData.getHand("right")
+    }
+    return null
+  }
+
+  /** SIK's own interactor for a hand, so a hand that took hold is tracked like any other. */
+  private handInteractor(handType: HandType): Interactor | null {
+    const inputType = handType === "left" ? InteractorInputType.LeftHand : InteractorInputType.RightHand
+    const found = SIK.InteractionManager.getInteractorsByType(inputType)
+
+    for (let i = 0; i < found.length; i++) {
+      if (found[i].inputType === inputType) {
+        return found[i]
+      }
+    }
+    return found.length > 0 ? found[0] : null
+  }
+
+  /** Midway between the index and thumb tips, the same point SIK's own direct pinch uses. */
+  private handPinchPoint(hand: TrackedHand): vec3 | null {
+    if (!hand.isTracked() || hand.indexTip == null || hand.thumbTip == null) {
+      return null
+    }
+    return hand.indexTip.position.add(hand.thumbTip.position).uniformScale(0.5)
   }
 
   /**
