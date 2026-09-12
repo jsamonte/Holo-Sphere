@@ -17,10 +17,22 @@ import {YoyoFlick} from "./YoyoFlick"
 const PINCHING_STRENGTH = 0.8
 
 /** Shortest time a finger has to be in for a quick jab to count, rather than a brush. */
-const JAB_MIN = 0.04
+const JAB_MIN = 0.03
 
 /** How long after a quick jab to wait, making sure it was not the start of a pinch, before it counts. */
-const JAB_CONFIRM = 0.1
+const JAB_CONFIRM = 0.08
+
+/**
+ * How long the pose check or hand tracking may drop out while the finger is in before the poke is
+ * over. Fingertip tracking wobbles, and without this a single bad frame would restart the count.
+ */
+const DROPOUT_GRACE = 0.15
+
+/**
+ * How much shallower than Depth, as a fraction of the radius, a finger already in may sit before it
+ * counts as out - so the shake a poke sets off cannot jostle it out again.
+ */
+const EXIT_SLACK = 0.2
 
 /** How long a confirmed quick jab reads as poked, so its sound and shake are heard and seen. */
 const JAB_PULSE = 0.25
@@ -38,9 +50,10 @@ const JAB_PULSE = 0.25
  * A hand reaching in to pinch still points its index straight for a moment before the thumb closes,
  * so a poke is recognised one of two ways:
  *
- * - **Held.** A finger that stays in for Poke Delay is poking, for as long as it stays in.
- * - **Jab.** A quicker in-and-out counts once the finger is out again, provided no pinch follows in
- *   the moment after, and then reads as poked for a short pulse.
+ * - **Held.** A finger that stays in for Poke Delay is poking, for as long as it stays in. A frame
+ *   or two of the pose check or tracking dropping out does not end it.
+ * - **Jab.** A quicker in-and-out counts once the fingertip is out again, provided no pinch follows
+ *   in the moment after, and then reads as poked for a short pulse.
  *
  * A pinch starting while the finger is in cancels either, and a hand cannot poke for Pinch Cooldown
  * after it was pinching, or after the sphere was last busy with another move - so a finger still
@@ -71,8 +84,8 @@ sphere's radius. 0 counts at the surface; higher needs a deeper poke."
     "How long a finger has to stay in the sphere to count while still in it. Quicker jabs still \
 count, once the finger comes back out without a pinch following."
   )
-  @widget(new SliderWidget(0, 1, 0.05))
-  pokeDelay: number = 0.3
+  @widget(new SliderWidget(0, 1, 0.01))
+  pokeDelay: number = 0.1
 
   @input
   @label("Pinch Cooldown (s)")
@@ -81,7 +94,7 @@ count, once the finger comes back out without a pinch following."
 crushed, squished or thrown - so a finger still inside when a pinch lets go does not count."
   )
   @widget(new SliderWidget(0, 2, 0.05))
-  pinchCooldown: number = 0.5
+  pinchCooldown: number = 0.3
 
   @input
   @label("Debug Log")
@@ -96,6 +109,9 @@ registering. Leave off for a shipping build."
 
   /** Seconds each hand's finger has been in the sphere, pointing, without a break. */
   private insideTime = new Map<string, number>()
+
+  /** Seconds each hand's finger has read as out while its poke is held on through a dropout. */
+  private outTime = new Map<string, number>()
 
   /** Seconds left before each hand's quick jab confirms, or 0 when there is none waiting. */
   private jabWait = new Map<string, number>()
@@ -128,6 +144,7 @@ registering. Leave off for a shipping build."
     this.createEvent("OnDisableEvent").bind(() => {
       this.poked = false
       this.insideTime.clear()
+      this.outTime.clear()
       this.jabWait.clear()
       this.jabPulse.clear()
     })
@@ -174,19 +191,41 @@ registering. Leave off for a shipping build."
         this.lastPinchTime.set(handType, now)
       }
 
-      // Counted up only while the finger stays in without a break.
+      // Once in, the fingertip has to come back out towards the surface to leave, so the shake a
+      // poke sets off cannot jostle it out again.
       const was = this.insideTime.get(handType) ?? 0
-      const inNow = !busy && this.fingerIn(hand, other, handType, now)
-      const held = inNow ? was + deltaTime : 0
-      this.insideTime.set(handType, held)
-
-      // Out again before Poke Delay, and not because a pinch closed on it: a quick jab, which counts
-      // once it is clear no pinch is following. The fingertip has to have actually left - a finger
-      // that stops pointing while still inside is a hand curling into a fist, not a jab.
+      const needed = was > 0 ? this.depth - EXIT_SLACK : this.depth
+      const inNow = !busy && this.fingerIn(hand, other, handType, now, needed)
       const fisting = this.isFisting(hand)
-      if (!inNow && was >= JAB_MIN && was < this.pokeDelay && !closing && !busy && !fisting && this.tipDepth(hand) < this.depth) {
-        this.jabWait.set(handType, JAB_CONFIRM)
+
+      let held = 0
+      let gap = 0
+      if (inNow) {
+        held = was + deltaTime
+      } else if (was > 0) {
+        // A pinch, a fist, another move or the other hand setting up a compress ends it at once, and
+        // so does the fingertip coming back out. Anything else - the pose check or tracking dropping
+        // out for a frame - is held on through DROPOUT_GRACE rather than starting the count over.
+        const cancelled = busy || closing || fisting || this.isSettingUpCompress(other)
+        const left = hand !== null && hand.isTracked() && this.tipDepth(hand) < needed
+        gap = (this.outTime.get(handType) ?? 0) + deltaTime
+
+        if (cancelled) {
+          gap = 0
+        } else if (left || gap >= DROPOUT_GRACE) {
+          // Out again before Poke Delay, and not because a pinch closed on it: a quick jab, which
+          // counts once it is clear no pinch is following. The fingertip has to have actually left -
+          // a finger that stops pointing while still inside is a hand curling into a fist, not a jab.
+          if (left && was >= JAB_MIN && was < this.pokeDelay) {
+            this.jabWait.set(handType, JAB_CONFIRM)
+          }
+          gap = 0
+        } else {
+          held = was
+        }
       }
+      this.insideTime.set(handType, held)
+      this.outTime.set(handType, gap)
 
       let wait = this.jabWait.get(handType) ?? 0
       if (wait > 0) {
@@ -217,7 +256,8 @@ registering. Leave off for a shipping build."
     this.poked = poked
   }
 
-  private fingerIn(hand: TrackedHand, other: TrackedHand, handType: HandType, now: number): boolean {
+  /** Pointing, clear of every cooldown, and with the fingertip at least `needed` deep. */
+  private fingerIn(hand: TrackedHand, other: TrackedHand, handType: HandType, now: number, needed: number): boolean {
     if (!this.isPointing(hand) || this.isSettingUpCompress(other)) {
       return false
     }
@@ -227,7 +267,7 @@ registering. Leave off for a shipping build."
     if (now - this.lastBusyTime < this.pinchCooldown) {
       return false
     }
-    return this.tipDepth(hand) >= this.depth
+    return this.tipDepth(hand) >= needed
   }
 
   /** Tracked, only the index sticking out, and not pinching or closing into one. */

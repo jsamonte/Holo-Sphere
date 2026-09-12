@@ -1546,16 +1546,14 @@
   ScriptAsset: !<reference> 806f40b6-d9e4-41bb-9330-74e2a2ed5217
   ScriptInputsDefault:
     depth: true
-    pokeDelay: true
-    pinchCooldown: true
     debugLog: true
   ScriptTypesDefault:
     {}
   ScriptInputs:
     "":
       depth: 0.150000
-      pokeDelay: 0.300000
-      pinchCooldown: 0.500000
+      pokeDelay: 0.100000
+      pinchCooldown: 0.300000
       debugLog: false
   ScriptTypes:
     "":
