@@ -2,6 +2,7 @@ import {Interactable} from "../SpectaclesInteractionKit.lspkg/Components/Interac
 import {InteractorEvent} from "../SpectaclesInteractionKit.lspkg/Core/Interactor/InteractorEvent"
 import {FingerPoke} from "./FingerPoke"
 import {CrushPhase, FistCrush} from "./FistCrush"
+import {GlobalLeaderboard} from "./GlobalLeaderboard"
 import {PalmSquish, SquishPhase} from "./PalmSquish"
 import {TwoHandSplit} from "./TwoHandSplit"
 import {YoyoFlick} from "./YoyoFlick"
@@ -58,12 +59,14 @@ const enum Stage {
   Praising,
   /** Rhythm game: orders are being called out on the beat of the music. */
   Rhythm,
-  /** Rhythm game: wrong move or too slow. Short pause, then the Ending Sequence and the menu. */
+  /** Rhythm game: wrong move or too slow. Short pause, then the Ending Sequence and the leaderboard. */
   Failed,
   /** All orders done. The mode's completion line is playing. */
   Completing,
-  /** The Ending Sequence is playing before the menu comes back. */
-  Ending
+  /** The Ending Sequence is playing before the menu, or a rhythm mode's leaderboard, comes up. */
+  Ending,
+  /** Rhythm game over: the mode's leaderboard is up until its Main Menu button is pressed. */
+  Leaderboard
 }
 
 /**
@@ -77,12 +80,18 @@ const enum Stage {
  * Bars Per Order bars, with nothing asked during the first Silent Intro seconds. Each order must be
  * carried out before the next order's beat comes round, with no Good Job in between - the next
  * order arriving on the beat is the only sign it counted. Doing a different move, or not doing it
- * in time, ends the run with the Ending Sequence. Orders To Win correct orders in a row plays the
- * Easy completion line, then the Ending Sequence. Either way the menu follows.
+ * in time, ends the run with the Ending Sequence, and the leaderboard follows. With Orders To Win
+ * at 0 the run is endless; above 0, that many correct orders in a row wins, playing the Easy
+ * completion line before the Ending Sequence.
  *
  * **Medium** and **Hard** are the same game on their own songs, each with its own beat grid,
  * silent intro and pace from its Rhythm section, and its own completion line. Each is faster than
- * the one before: an order every 3.9 s on Easy, 3.3 s on Medium and 1.9 s on Hard.
+ * the one before: an order every 3.9 s on Easy, 3.5 s on Medium and 2.4 s on Hard.
+ *
+ * **Leaderboard.** A rhythm run's score - its correct orders in a row - is posted to that mode's
+ * global leaderboard the moment the run ends, or with no internet kept on the headset under a name
+ * the player types. The leaderboard takes the menu's place once the Ending Sequence is over, and
+ * its Main Menu button brings the menu back. The Tutorial is not scored.
  *
  * The beat clock is the music's own playback position rather than a timer, so the orders cannot
  * drift away from the song however long the run goes on, including across the song looping. The
@@ -135,6 +144,15 @@ export class GameMenu extends BaseScriptComponent {
   @label("Hard Button")
   @allowUndefined
   hardButton: SceneObject | null = null
+
+  @input
+  @label("Leaderboard")
+  @hint(
+    "The Leaderboard panel, whose GlobalLeaderboard shows each rhythm mode's top scores after a run - \
+global, or the headset's own when offline. Left empty, runs go straight back to the menu."
+  )
+  @allowUndefined
+  leaderboardRoot: SceneObject | null = null
 
   @ui.separator
   @ui.label('<span style="color: #60A5FA;">Music</span>')
@@ -202,7 +220,7 @@ export class GameMenu extends BaseScriptComponent {
   @ui.separator
   @ui.label('<span style="color: #60A5FA;">Completion</span>')
   @ui.label(
-    '<span style="color: #94A3B8; font-size: 11px;">The mode\'s line plays first, then the Ending Sequence, then the menu.</span>'
+    '<span style="color: #94A3B8; font-size: 11px;">The mode\'s line plays first, then the Ending Sequence. Rhythm modes only get here when their Orders To Win is above 0.</span>'
   )
 
   @input @label("Tutorial Complete") @allowUndefined tutorialComplete: AudioTrackAsset | null = null
@@ -274,15 +292,15 @@ playing, they play again - and again after each repeat - until it is. 0 never re
 
   @input
   @label("Gap Before Menu (s)")
-  @hint("Pause between the Ending Sequence finishing and the menu coming back.")
+  @hint("Pause between the Ending Sequence finishing and the menu, or a rhythm mode's leaderboard, coming up.")
   @widget(new SliderWidget(0, 5, 0.1))
   finishGap: number = 2.5
 
   @input
   @label("Gap Before Ending On Fail (s)")
   @hint(
-    "Rhythm modes: pause between a failed order and the Ending Sequence starting. The menu follows \
-the Ending Sequence."
+    "Rhythm modes: pause between a failed order and the Ending Sequence starting. The leaderboard \
+follows the Ending Sequence."
   )
   @widget(new SliderWidget(0, 5, 0.1))
   failGap: number = 1
@@ -325,8 +343,8 @@ next one. 2 bars at 123 BPM is 3.9 s per order; 1 bar is 1.95 s."
 
   @input
   @label("Orders To Win")
-  @hint("Correct orders in a row needed to win.")
-  orderCount: number = 100
+  @hint("Correct orders in a row that win the run. 0 never ends it: the run goes on until an order is missed.")
+  orderCount: number = 0
 
   @input
   @label("Beat Offset (s)")
@@ -340,18 +358,18 @@ slightly off the beat on device."
   @ui.separator
   @ui.label('<span style="color: #60A5FA;">Rhythm (Medium)</span>')
   @ui.label(
-    '<span style="color: #94A3B8; font-size: 11px;">Measured from the Medium song: 145 BPM, first downbeat at 0.140 s. The first order lands on the drop at 13.4 s.</span>'
+    '<span style="color: #94A3B8; font-size: 11px;">Measured from the Medium song, Fridays: 136 BPM, first downbeat at 1.060 s. After the 3 s silent intro the first order lands on the downbeat at 4.6 s.</span>'
   )
 
   @input
   @label("BPM")
-  @hint("Tempo of the Medium song. Measured at 145.0 and steady for the whole track.")
-  mediumBpm: number = 145
+  @hint("Tempo of the Medium song, Fridays. Measured at 136.0 and steady for the whole track.")
+  mediumBpm: number = 136
 
   @input
   @label("First Downbeat (s)")
   @hint("Seconds into the song file where bar 1 lands. Every order is placed on a bar line counted from here.")
-  mediumFirstDownbeat: number = 0.14
+  mediumFirstDownbeat: number = 1.06
 
   @input
   @label("Beats Per Bar")
@@ -362,7 +380,7 @@ slightly off the beat on device."
   @label("Bars Per Order")
   @hint(
     "An order is called on the first beat of every this-many bars, and must be done before the \
-next one. 2 bars at 145 BPM is 3.3 s per order; 1 bar is 1.66 s."
+next one. 2 bars at 136 BPM is 3.5 s per order; 1 bar is 1.76 s."
   )
   @widget(new SliderWidget(1, 8, 1))
   mediumBarsPerOrder: number = 2
@@ -371,12 +389,12 @@ next one. 2 bars at 145 BPM is 3.3 s per order; 1 bar is 1.66 s."
   @label("Silent Intro (s)")
   @hint("No orders until this many seconds into the song. The first order is the first bar line after it.")
   @widget(new SliderWidget(0, 30, 0.5))
-  mediumStartDelay: number = 13
+  mediumStartDelay: number = 3
 
   @input
   @label("Orders To Win")
-  @hint("Correct orders in a row needed to win.")
-  mediumOrderCount: number = 100
+  @hint("Correct orders in a row that win the run. 0 never ends it: the run goes on until an order is missed.")
+  mediumOrderCount: number = 0
 
   @input
   @label("Beat Offset (s)")
@@ -390,18 +408,21 @@ slightly off the beat on device."
   @ui.separator
   @ui.label('<span style="color: #60A5FA;">Rhythm (Hard)</span>')
   @ui.label(
-    '<span style="color: #94A3B8; font-size: 11px;">Measured from the Hard song: 126 BPM, first downbeat at 1.867 s. The first order lands on the section change at 15.2 s.</span>'
+    '<span style="color: #94A3B8; font-size: 11px;">Measured from the Hard song, The Cutback: 147 BPM, first downbeat at 0.230 s. The grid starts one bar later so that after the 11 s silent intro the first order lands on the downbeat at 11.66 s. The drop is at 13.29 s.</span>'
   )
 
   @input
   @label("BPM")
-  @hint("Tempo of the Hard song. Measured at 126.0 and steady for the whole track.")
-  hardBpm: number = 126
+  @hint("Tempo of the Hard song, The Cutback. Measured at 147.0 and steady for the whole track.")
+  hardBpm: number = 147
 
   @input
   @label("First Downbeat (s)")
-  @hint("Seconds into the song file where bar 1 lands. Every order is placed on a bar line counted from here.")
-  hardFirstDownbeat: number = 1.867
+  @hint(
+    "Seconds into the song file of the downbeat the order grid is counted from, in beats. Any downbeat \
+works; 1.863 s is one bar after the song's first, which puts the first order after the silent intro on beat 1."
+  )
+  hardFirstDownbeat: number = 1.863
 
   @input
   @label("Beats Per Bar")
@@ -411,22 +432,23 @@ slightly off the beat on device."
   @input
   @label("Bars Per Order")
   @hint(
-    "An order is called on the first beat of every this-many bars, and must be done before the \
-next one. 1 bar at 126 BPM is 1.9 s per order, faster than Medium; 2 bars would be 3.8 s, slower."
+    "An order is called every this-many bars, rounded to the nearest beat, and must be done before \
+the next one. 1.5 bars at 147 BPM is 6 beats, 2.4 s per order, alternating the first and third beat \
+of the bar and clearly faster than Medium's 3.5 s. 2 bars would be 3.3 s, every order on beat 1."
   )
-  @widget(new SliderWidget(1, 8, 1))
-  hardBarsPerOrder: number = 1
+  @widget(new SliderWidget(1, 8, 0.25))
+  hardBarsPerOrder: number = 1.5
 
   @input
   @label("Silent Intro (s)")
   @hint("No orders until this many seconds into the song. The first order is the first bar line after it.")
   @widget(new SliderWidget(0, 30, 0.5))
-  hardStartDelay: number = 14
+  hardStartDelay: number = 11
 
   @input
   @label("Orders To Win")
-  @hint("Correct orders in a row needed to win.")
-  hardOrderCount: number = 100
+  @hint("Correct orders in a row that win the run. 0 never ends it: the run goes on until an order is missed.")
+  hardOrderCount: number = 0
 
   @input
   @label("Beat Offset (s)")
@@ -461,10 +483,13 @@ slightly off the beat on device."
 
   /**
    * Rhythm game: song times, in seconds since the music started and counting across loops, at
-   * which each order is called. One longer than Orders To Win, since the slot after the last order
-   * is that order's deadline. Built once the music reports its length.
+   * which each order is called - the slot after an order being its deadline. Built a loop of the
+   * song at a time once the music reports its length, and extended as the run goes on.
    */
   private schedule: number[] = []
+  /** How many loops of the song the schedule covers so far, and the time of its last slot. */
+  private scheduledLoops = 0
+  private lastSlot = Number.NEGATIVE_INFINITY
   private nextSlot = 0
   private ordersDone = 0
   /** The order waiting to be carried out, or null between an order being done and the next beat. */
@@ -476,6 +501,10 @@ slightly off the beat on device."
 
   private music: AudioComponent | null = null
   private voice: AudioComponent | null = null
+  /** What the music channel was last told to loop, so the menu song carries on from the leaderboard. */
+  private musicTrack: AudioTrackAsset | null = null
+
+  private board: GlobalLeaderboard | null = null
 
   private split: TwoHandSplit | null = null
   private yoyo: YoyoFlick | null = null
@@ -520,6 +549,10 @@ slightly off the beat on device."
 
     this.voice = this.getSceneObject().createComponent("Component.AudioComponent") as AudioComponent
     this.voice.volume = this.voiceVolume
+
+    if (this.leaderboardRoot != null) {
+      this.board = this.leaderboardRoot.getComponent(GlobalLeaderboard.getTypeName()) as GlobalLeaderboard
+    }
 
     this.bindButton(this.tutorialButton, Mode.Tutorial)
     this.bindButton(this.easyButton, Mode.Easy)
@@ -612,7 +645,7 @@ slightly off the beat on device."
         break
 
       case Stage.Ending:
-        this.countDown(() => this.returnToMenu())
+        this.countDown(() => this.finishRun())
         break
 
       default:
@@ -695,6 +728,8 @@ slightly off the beat on device."
     // The schedule waits for the music to report its length, which is what places the orders
     // after each loop of the song back on that loop's own bar lines.
     this.schedule = []
+    this.scheduledLoops = 0
+    this.lastSlot = Number.NEGATIVE_INFINITY
     this.songLength = 0
     this.songLoops = 0
     this.lastSongPosition = 0
@@ -752,12 +787,17 @@ slightly off the beat on device."
       return
     }
 
-    if (this.schedule.length === 0) {
+    if (this.songLength <= 0) {
       this.songLength = this.music.duration
       if (this.songLength <= 0) {
         return
       }
-      this.schedule = this.buildSchedule(this.chart, this.songLength)
+    }
+
+    // Kept a slot ahead of the order being called, so it always has a deadline however long the run
+    // goes on. A few loops at most per frame, in case a loop's worth of song holds no slot at all.
+    for (let i = 0; i < 4 && this.nextSlot >= this.schedule.length; i++) {
+      this.scheduleLoop(this.chart)
     }
 
     const now = this.songTime(this.chart)
@@ -767,7 +807,7 @@ slightly off the beat on device."
         this.currentOrder = null
         this.ordersDone++
 
-        if (this.ordersDone >= this.chart.orderCount) {
+        if (this.chart.orderCount > 0 && this.ordersDone >= this.chart.orderCount) {
           this.complete()
           return
         }
@@ -811,41 +851,43 @@ slightly off the beat on device."
   }
 
   /**
-   * Every Bars Per Order bars from the first downbeat, from the end of the silent intro on. The
-   * song's length is not a whole number of bars, so each loop restarts the grid at its own first
-   * downbeat - and a slot that would come too soon after the last one of the previous loop is
-   * skipped, so the seam never leaves less than most of a normal window to do an order in.
+   * Adds the next loop of the song's slots: every Bars Per Order bars from the first downbeat, from
+   * the end of the silent intro on. The spacing is rounded to a whole number of beats rather than
+   * bars, so a fractional setting still lands exactly on the beat: 1.5 bars in 4/4 is 6 beats,
+   * alternating orders between the first and third beat of the bar. The song's length is not a
+   * whole number of bars, so each loop restarts the grid at its own first downbeat - and a slot
+   * that would come too soon after the last one of the previous loop is skipped, so the seam never
+   * leaves less than most of a normal window to do an order in.
    */
-  private buildSchedule(chart: RhythmChart, songLength: number): number[] {
-    const barLength = (Math.max(1, Math.round(chart.beatsPerBar)) * 60) / Math.max(1, chart.bpm)
-    const interval = barLength * Math.max(1, Math.round(chart.barsPerOrder))
-    const needed = Math.max(1, Math.round(chart.orderCount)) + 1
+  private scheduleLoop(chart: RhythmChart): void {
+    const beatsPerBar = Math.max(1, Math.round(chart.beatsPerBar))
+    const beatLength = 60 / Math.max(1, chart.bpm)
+    const beatsPerOrder = Math.max(1, Math.round(chart.barsPerOrder * beatsPerBar))
+    const interval = beatLength * beatsPerOrder
+    const loopStart = this.scheduledLoops * this.songLength
 
-    const slots: number[] = []
-    let last = -interval
-
-    for (let loopStart = 0; slots.length < needed; loopStart += songLength) {
-      for (let t = chart.firstDownbeat; t < songLength && slots.length < needed; t += interval) {
-        const at = loopStart + t
-        if (at >= chart.startDelay && at - last >= interval * 0.75) {
-          slots.push(at)
-          last = at
-        }
+    for (let t = chart.firstDownbeat; t < this.songLength; t += interval) {
+      const at = loopStart + t
+      if (at >= chart.startDelay && at - this.lastSlot >= interval * 0.75) {
+        this.schedule.push(at)
+        this.lastSlot = at
       }
     }
 
-    return slots
+    this.scheduledLoops++
   }
 
   private fail(): void {
     this.currentOrder = null
     this.stopMusic()
     this.stopVoice()
+    this.postScore()
     this.timer = this.failGap
     this.stage = Stage.Failed
   }
 
   private complete(): void {
+    this.postScore()
     this.playVoice(this.completionFor(this.mode))
     this.timer = this.voiceLength() + this.endingGap
     this.stage = Stage.Completing
@@ -855,6 +897,37 @@ slightly off the beat on device."
     this.playVoice(this.endingSequence)
     this.timer = this.voiceLength() + this.finishGap
     this.stage = Stage.Ending
+  }
+
+  /** Posted the moment the run ends, so the board has usually arrived by the time it is shown. */
+  private postScore(): void {
+    const name = this.boardFor(this.mode)
+    if (this.board !== null && name !== null) {
+      this.board.postScore(name, this.ordersDone)
+    }
+  }
+
+  /** Rhythm modes show their leaderboard next. The Tutorial goes straight back to the menu. */
+  private finishRun(): void {
+    if (this.board === null || this.boardFor(this.mode) === null) {
+      this.returnToMenu()
+      return
+    }
+
+    this.showSphere(false)
+    this.playMusic(this.menuMusic)
+    this.board.show(() => this.closeLeaderboard())
+    this.stage = Stage.Leaderboard
+  }
+
+  private closeLeaderboard(): void {
+    if (this.stage !== Stage.Leaderboard || this.board === null) {
+      return
+    }
+
+    this.board.hide()
+    this.showMenu(true)
+    this.stage = Stage.Menu
   }
 
   private returnToMenu(): void {
@@ -916,6 +989,20 @@ slightly off the beat on device."
         return this.hardComplete
       default:
         return this.tutorialComplete
+    }
+  }
+
+  /** Each rhythm mode keeps its own board, since a score on one pace says nothing about another. */
+  private boardFor(mode: Mode): string | null {
+    switch (mode) {
+      case Mode.Easy:
+        return "EASY"
+      case Mode.Medium:
+        return "MEDIUM"
+      case Mode.Hard:
+        return "HARD"
+      default:
+        return null
     }
   }
 
@@ -1026,15 +1113,7 @@ slightly off the beat on device."
 
     // The sphere and the menu are never up together: the sphere stands between the player and the
     // buttons, and it is not meant to be played with until a mode has been chosen.
-    if (this.sphere != null && this.sphere !== this.getSceneObject()) {
-      this.sphere.enabled = !visible
-    }
-
-    // The copy lives at the scene root, so hiding the sphere does not hide it. A run that fails
-    // mid-split would otherwise leave it floating in front of the menu.
-    if (visible && this.duplicateIsLive()) {
-      this.duplicateObject!.enabled = false
-    }
+    this.showSphere(!visible)
 
     // Menu music belongs to the menu: on while it is up, off the moment it goes. Stopped here
     // rather than left for the mode's own song to replace, because a mode with no song assigned
@@ -1044,6 +1123,18 @@ slightly off the beat on device."
       this.playMusic(this.menuMusic)
     } else {
       this.stopMusic()
+    }
+  }
+
+  private showSphere(visible: boolean): void {
+    if (this.sphere != null && this.sphere !== this.getSceneObject()) {
+      this.sphere.enabled = visible
+    }
+
+    // The copy lives at the scene root, so hiding the sphere does not hide it. A run that fails
+    // mid-split would otherwise leave it floating in front of the menu.
+    if (!visible && this.duplicateIsLive()) {
+      this.duplicateObject!.enabled = false
     }
   }
 
@@ -1059,13 +1150,20 @@ slightly off the beat on device."
       return
     }
 
+    // Already looping it, as the menu song is when the leaderboard hands back to the menu.
+    if (track === this.musicTrack && this.music.isPlaying()) {
+      return
+    }
+
     this.stopMusic()
     this.music.audioTrack = track
     this.music.volume = this.musicVolume
     this.music.play(-1)
+    this.musicTrack = track
   }
 
   private stopMusic(): void {
+    this.musicTrack = null
     if (this.music !== null && this.music.isPlaying()) {
       this.music.stop(false)
     }

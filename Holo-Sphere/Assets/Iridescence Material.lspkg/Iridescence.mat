@@ -125,7 +125,7 @@
       value: {x: 1.000000, y: 1.000000, z: 1.000000}
     Port_Emissive_N006:
       typeIdx: 4
-      value: {x: 0.025000, y: 0.250000, z: 0.310000}
+      value: {x: 0.006250, y: 0.062500, z: 0.077500}
     Port_Input1_N011:
       typeIdx: 1
       value: 2.000000
@@ -149,7 +149,7 @@
       value: 1.000000
     Port_Opacity_N006:
       typeIdx: 1
-      value: 0.030000
+      value: 0.010000
     Port_RangeMaxA_N049:
       typeIdx: 1
       value: 1.000000
@@ -173,13 +173,13 @@
       value: 0
     baseColor:
       typeIdx: 5
-      value: {x: 0.250000, y: 0.820000, z: 0.950000, w: 1.000000}
+      value: {x: 0.125000, y: 0.410000, z: 0.475000, w: 1.000000}
     exponent:
       typeIdx: 1
       value: 1.250000
     intensity:
       typeIdx: 1
-      value: 1.800000
+      value: 0.900000
     iridescenceMap:
       typeIdx: 9
       value:

@@ -57,6 +57,7 @@
     hardOrderCount: false
     hardStartDelay: false
     instructionGap: false
+    leaderboardRoot: false
     mediumBarsPerOrder: false
     mediumBeatOffset: false
     mediumBeatsPerBar: false
@@ -97,6 +98,7 @@
       easyButton: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       mediumButton: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       hardButton: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      leaderboardRoot: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       menuMusic: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
       tutorialMusic: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
       easyMusic: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
@@ -160,6 +162,7 @@
     - '// @input SceneObject easyButton {"label":"Easy Button"}'
     - '// @input SceneObject mediumButton {"label":"Medium Button"}'
     - '// @input SceneObject hardButton {"label":"Hard Button"}'
+    - "// @input SceneObject leaderboardRoot {\"label\":\"Leaderboard\", \"hint\":\"The Leaderboard panel, whose GlobalLeaderboard shows each rhythm mode's top scores after a run - global, or the headset's own when offline. Left empty, runs go straight back to the menu.\"}"
     - '// @ui {"widget":"separator"}'
     - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Music</span>"}'
     - "// @ui {\"widget\":\"label\", \"label\":\"<span style=\\\"color: #94A3B8; font-size: 11px;\\\">Menu Music loops while the menu is up. Each mode's bed loops until its run ends.</span>\"}"
@@ -186,7 +189,7 @@
     - '// @input Asset.AudioTrackAsset pokeInstruction {"label":"Poke Instruction", "hint":"Explains how to poke the sphere with an index finger. Assets/Audio/Instruction/Poke Instructions.mp3."}'
     - '// @ui {"widget":"separator"}'
     - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Completion</span>"}'
-    - "// @ui {\"widget\":\"label\", \"label\":\"<span style=\\\"color: #94A3B8; font-size: 11px;\\\">The mode's line plays first, then the Ending Sequence, then the menu.</span>\"}"
+    - "// @ui {\"widget\":\"label\", \"label\":\"<span style=\\\"color: #94A3B8; font-size: 11px;\\\">The mode's line plays first, then the Ending Sequence. Rhythm modes only get here when their Orders To Win is above 0.</span>\"}"
     - '// @input Asset.AudioTrackAsset tutorialComplete {"label":"Tutorial Complete"}'
     - '// @input Asset.AudioTrackAsset easyComplete {"label":"Easy Complete"}'
     - '// @input Asset.AudioTrackAsset mediumComplete {"label":"Medium Complete"}'
@@ -204,8 +207,8 @@
     - '// @input float repeatInstructionsAfter = 15 {"label":"Repeat Instructions After (s)", "hint":"Tutorial mode: if an order still is not done this many seconds after its instructions finish playing, they play again - and again after each repeat - until it is. 0 never repeats them.", "widget":"slider", "min":0, "max":60, "step":1}'
     - '// @input float praiseGap = 1.2 {"label":"Gap After Praise (s)", "hint":"Tutorial mode: pause between Good Job finishing and the next order being called out.", "widget":"slider", "min":0, "max":3, "step":0.1}'
     - '// @input float endingGap = 0.6 {"label":"Gap Before Ending (s)", "hint":"Pause between the completion line finishing and the Ending Sequence starting.", "widget":"slider", "min":0, "max":3, "step":0.1}'
-    - '// @input float finishGap = 2.5 {"label":"Gap Before Menu (s)", "hint":"Pause between the Ending Sequence finishing and the menu coming back.", "widget":"slider", "min":0, "max":5, "step":0.1}'
-    - '// @input float failGap = 1 {"label":"Gap Before Ending On Fail (s)", "hint":"Rhythm modes: pause between a failed order and the Ending Sequence starting. The menu follows the Ending Sequence.", "widget":"slider", "min":0, "max":5, "step":0.1}'
+    - "// @input float finishGap = 2.5 {\"label\":\"Gap Before Menu (s)\", \"hint\":\"Pause between the Ending Sequence finishing and the menu, or a rhythm mode's leaderboard, coming up.\", \"widget\":\"slider\", \"min\":0, \"max\":5, \"step\":0.1}"
+    - '// @input float failGap = 1 {"label":"Gap Before Ending On Fail (s)", "hint":"Rhythm modes: pause between a failed order and the Ending Sequence starting. The leaderboard follows the Ending Sequence.", "widget":"slider", "min":0, "max":5, "step":0.1}'
     - '// @ui {"widget":"separator"}'
     - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Rhythm (Easy)</span>"}'
     - '// @ui {"widget":"label", "label":"<span style=\"color: #94A3B8; font-size: 11px;\">Measured from the Easy song: 123 BPM, first downbeat at 0.148 s.</span>"}'
@@ -214,25 +217,25 @@
     - '// @input float beatsPerBar = 4 {"label":"Beats Per Bar", "widget":"slider", "min":2, "max":8, "step":1}'
     - '// @input float barsPerOrder = 2 {"label":"Bars Per Order", "hint":"An order is called on the first beat of every this-many bars, and must be done before the next one. 2 bars at 123 BPM is 3.9 s per order; 1 bar is 1.95 s.", "widget":"slider", "min":1, "max":8, "step":1}'
     - '// @input float startDelay = 7 {"label":"Silent Intro (s)", "hint":"No orders until this many seconds into the song. The first order is the first bar line after it.", "widget":"slider", "min":0, "max":30, "step":0.5}'
-    - '// @input float orderCount = 100 {"label":"Orders To Win", "hint":"Correct orders in a row needed to win."}'
+    - '// @input float orderCount {"label":"Orders To Win", "hint":"Correct orders in a row that win the run. 0 never ends it: the run goes on until an order is missed."}'
     - '// @input float beatOffset {"label":"Beat Offset (s)", "hint":"Nudges every order later (positive) or earlier (negative) against the music, if they sound slightly off the beat on device.", "widget":"slider", "min":-0.25, "max":0.25, "step":0.005}'
     - '// @ui {"widget":"separator"}'
     - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Rhythm (Medium)</span>"}'
-    - '// @ui {"widget":"label", "label":"<span style=\"color: #94A3B8; font-size: 11px;\">Measured from the Medium song: 145 BPM, first downbeat at 0.140 s. The first order lands on the drop at 13.4 s.</span>"}'
-    - '// @input float mediumBpm = 145 {"label":"BPM", "hint":"Tempo of the Medium song. Measured at 145.0 and steady for the whole track."}'
-    - '// @input float mediumFirstDownbeat = 0.14 {"label":"First Downbeat (s)", "hint":"Seconds into the song file where bar 1 lands. Every order is placed on a bar line counted from here."}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #94A3B8; font-size: 11px;\">Measured from the Medium song, Fridays: 136 BPM, first downbeat at 1.060 s. After the 3 s silent intro the first order lands on the downbeat at 4.6 s.</span>"}'
+    - '// @input float mediumBpm = 136 {"label":"BPM", "hint":"Tempo of the Medium song, Fridays. Measured at 136.0 and steady for the whole track."}'
+    - '// @input float mediumFirstDownbeat = 1.06 {"label":"First Downbeat (s)", "hint":"Seconds into the song file where bar 1 lands. Every order is placed on a bar line counted from here."}'
     - '// @input float mediumBeatsPerBar = 4 {"label":"Beats Per Bar", "widget":"slider", "min":2, "max":8, "step":1}'
-    - '// @input float mediumBarsPerOrder = 2 {"label":"Bars Per Order", "hint":"An order is called on the first beat of every this-many bars, and must be done before the next one. 2 bars at 145 BPM is 3.3 s per order; 1 bar is 1.66 s.", "widget":"slider", "min":1, "max":8, "step":1}'
-    - '// @input float mediumStartDelay = 13 {"label":"Silent Intro (s)", "hint":"No orders until this many seconds into the song. The first order is the first bar line after it.", "widget":"slider", "min":0, "max":30, "step":0.5}'
-    - '// @input float mediumOrderCount = 100 {"label":"Orders To Win", "hint":"Correct orders in a row needed to win."}'
+    - '// @input float mediumBarsPerOrder = 2 {"label":"Bars Per Order", "hint":"An order is called on the first beat of every this-many bars, and must be done before the next one. 2 bars at 136 BPM is 3.5 s per order; 1 bar is 1.76 s.", "widget":"slider", "min":1, "max":8, "step":1}'
+    - '// @input float mediumStartDelay = 3 {"label":"Silent Intro (s)", "hint":"No orders until this many seconds into the song. The first order is the first bar line after it.", "widget":"slider", "min":0, "max":30, "step":0.5}'
+    - '// @input float mediumOrderCount {"label":"Orders To Win", "hint":"Correct orders in a row that win the run. 0 never ends it: the run goes on until an order is missed."}'
     - '// @input float mediumBeatOffset {"label":"Beat Offset (s)", "hint":"Nudges every order later (positive) or earlier (negative) against the music, if they sound slightly off the beat on device.", "widget":"slider", "min":-0.25, "max":0.25, "step":0.005}'
     - '// @ui {"widget":"separator"}'
     - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Rhythm (Hard)</span>"}'
-    - '// @ui {"widget":"label", "label":"<span style=\"color: #94A3B8; font-size: 11px;\">Measured from the Hard song: 126 BPM, first downbeat at 1.867 s. The first order lands on the section change at 15.2 s.</span>"}'
-    - '// @input float hardBpm = 126 {"label":"BPM", "hint":"Tempo of the Hard song. Measured at 126.0 and steady for the whole track."}'
-    - '// @input float hardFirstDownbeat = 1.867 {"label":"First Downbeat (s)", "hint":"Seconds into the song file where bar 1 lands. Every order is placed on a bar line counted from here."}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #94A3B8; font-size: 11px;\">Measured from the Hard song, The Cutback: 147 BPM, first downbeat at 0.230 s. The grid starts one bar later so that after the 11 s silent intro the first order lands on the downbeat at 11.66 s. The drop is at 13.29 s.</span>"}'
+    - '// @input float hardBpm = 147 {"label":"BPM", "hint":"Tempo of the Hard song, The Cutback. Measured at 147.0 and steady for the whole track."}'
+    - "// @input float hardFirstDownbeat = 1.863 {\"label\":\"First Downbeat (s)\", \"hint\":\"Seconds into the song file of the downbeat the order grid is counted from, in beats. Any downbeat works; 1.863 s is one bar after the song's first, which puts the first order after the silent intro on beat 1.\"}"
     - '// @input float hardBeatsPerBar = 4 {"label":"Beats Per Bar", "widget":"slider", "min":2, "max":8, "step":1}'
-    - '// @input float hardBarsPerOrder = 1 {"label":"Bars Per Order", "hint":"An order is called on the first beat of every this-many bars, and must be done before the next one. 1 bar at 126 BPM is 1.9 s per order, faster than Medium; 2 bars would be 3.8 s, slower.", "widget":"slider", "min":1, "max":8, "step":1}'
-    - '// @input float hardStartDelay = 14 {"label":"Silent Intro (s)", "hint":"No orders until this many seconds into the song. The first order is the first bar line after it.", "widget":"slider", "min":0, "max":30, "step":0.5}'
-    - '// @input float hardOrderCount = 100 {"label":"Orders To Win", "hint":"Correct orders in a row needed to win."}'
+    - "// @input float hardBarsPerOrder = 1.5 {\"label\":\"Bars Per Order\", \"hint\":\"An order is called every this-many bars, rounded to the nearest beat, and must be done before the next one. 1.5 bars at 147 BPM is 6 beats, 2.4 s per order, alternating the first and third beat of the bar and clearly faster than Medium's 3.5 s. 2 bars would be 3.3 s, every order on beat 1.\", \"widget\":\"slider\", \"min\":1, \"max\":8, \"step\":0.25}"
+    - '// @input float hardStartDelay = 11 {"label":"Silent Intro (s)", "hint":"No orders until this many seconds into the song. The first order is the first bar line after it.", "widget":"slider", "min":0, "max":30, "step":0.5}'
+    - '// @input float hardOrderCount {"label":"Orders To Win", "hint":"Correct orders in a row that win the run. 0 never ends it: the run goes on until an order is missed."}'
     - '// @input float hardBeatOffset {"label":"Beat Offset (s)", "hint":"Nudges every order later (positive) or earlier (negative) against the music, if they sound slightly off the beat on device.", "widget":"slider", "min":-0.25, "max":0.25, "step":0.005}'

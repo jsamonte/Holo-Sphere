@@ -1,0 +1,85 @@
+- !<AssetImportMetadata/c0800b9d-3148-40ba-aa9d-1fd1671adae7>
+  ImportedAssetIds:
+    TypeScriptAsset: !<reference> 3decbe56-9ef1-4b22-b00a-faca7b446f3a
+  ImporterName: TypeScriptAssetImporter
+  PrimaryAsset: !<reference> 3decbe56-9ef1-4b22-b00a-faca7b446f3a
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    TypeScriptAsset: !<own> d46cb0ba-cd3c-446b-9564-9b41b56266ca
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<TypeScriptAssetData/d46cb0ba-cd3c-446b-9564-9b41b56266ca>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: 48cc6327-f756-45d1-acb6-2a786fe627a6
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    downButton: false
+    edgeColor: false
+    fetchLimit: false
+    infoText: false
+    menuButton: false
+    rowsText: false
+    scrollStep: false
+    textColor: false
+    titleColor: false
+    titleText: false
+    upButton: false
+    visibleRows: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - titleText: !<reference.Text3D> 00000000-0000-0000-0000-000000000000
+      infoText: !<reference.Text3D> 00000000-0000-0000-0000-000000000000
+      rowsText: !<reference.Text3D> 00000000-0000-0000-0000-000000000000
+      upButton: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      downButton: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      menuButton: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      visibleRows: !<float> 8.000000
+      scrollStep: !<float> 4.000000
+      fetchLimit: !<float> 50.000000
+      titleColor: !<Vec4> {x: 0.000000, y: 0.950000, z: 1.000000, w: 1.000000}
+      textColor: !<Vec4> {x: 1.000000, y: 0.400000, z: 0.850000, w: 1.000000}
+      edgeColor: !<Vec4> {x: 0.000000, y: 0.900000, z: 1.000000, w: 1.000000}
+  ScriptTypes:
+    -
+      {}
+  InputLines:
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Text</span>"}'
+    - '// @input Component.Text3D titleText {"label":"Title"}'
+    - "// @input Component.Text3D infoText {\"label\":\"Info\", \"hint\":\"Two lines: this run's score and standing, then which ranks are showing - or, while a name is being typed, how to finish.\"}"
+    - '// @input Component.Text3D rowsText {"label":"Rows", "hint":"The list itself. Needs a monospaced font, like VT323, for its columns to line up."}'
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Buttons</span>"}'
+    - '// @input SceneObject upButton {"label":"Scroll Up Button"}'
+    - '// @input SceneObject downButton {"label":"Scroll Down Button"}'
+    - '// @input SceneObject menuButton {"label":"Main Menu Button"}'
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">List</span>"}'
+    - '// @input float visibleRows = 10 {"label":"Visible Rows", "widget":"slider", "min":3, "max":15, "step":1}'
+    - '// @input float scrollStep = 5 {"label":"Rows Per Scroll", "widget":"slider", "min":1, "max":15, "step":1}'
+    - '// @input float fetchLimit = 50 {"label":"Scores To Fetch", "hint":"How many top scores are downloaded, or kept on the headset, and so how far down the list can be scrolled.", "widget":"slider", "min":10, "max":100, "step":5}'
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Palette</span>"}'
+    - '// @input vec4 titleColor = "{0, 0.95, 1, 1}" {"label":"Title", "widget":"color"}'
+    - '// @input vec4 textColor = "{1, 0.4, 0.85, 1}" {"label":"Text", "widget":"color"}'
+    - '// @input vec4 edgeColor = "{0, 0.9, 1, 1}" {"label":"Text Edge", "hint":"Sides of all the lettering.", "widget":"color"}'

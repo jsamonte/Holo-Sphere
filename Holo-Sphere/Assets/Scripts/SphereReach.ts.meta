@@ -22,11 +22,12 @@
   VersionMajor: 0
   VersionMinor: 0
   VersionPatch: 0
-  ComponentUid: 00000000-0000-0000-0000-000000000000
+  ComponentUid: d1f8bce7-f8d2-4125-be87-92c558148899
   ExportUid: 00000000-0000-0000-0000-000000000000
   PackagePolicy: CanBeUnpacked
   ScriptInputsHidden:
-    {}
+    forward: false
+    stretchGrab: false
   ScriptTypesHidden:
     {}
   ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
@@ -36,10 +37,13 @@
   Attachments:
     []
   DefaultScriptInputs:
-    -
-      {}
+    - forward: !<float> 2.000000
+      stretchGrab: true
   ScriptTypes:
     -
       {}
   InputLines:
-    []
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Reach</span>"}'
+    - "// @input float forward = 2 {\"label\":\"Forward Reach (radii)\", \"hint\":\"How far the sphere's reach stretches from its centre towards the player, in multiples of its radius. 0 leaves every check at the sphere itself.\", \"widget\":\"slider\", \"min\":0, \"max\":4, \"step\":0.1}"
+    - "// @input bool stretchGrab = true {\"label\":\"Stretch Grab Zone\", \"hint\":\"Also stretch the pinch grab zone forward, with a capsule collider as wide as the sphere's own grab collider. Off stretches only the hand checks - poke, compress, crush and the split.\"}"
