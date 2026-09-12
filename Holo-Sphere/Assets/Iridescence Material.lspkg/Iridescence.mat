@@ -149,7 +149,7 @@
       value: 1.000000
     Port_Opacity_N006:
       typeIdx: 1
-      value: 0.010000
+      value: 0.100000
     Port_RangeMaxA_N049:
       typeIdx: 1
       value: 1.000000
@@ -173,7 +173,7 @@
       value: 0
     baseColor:
       typeIdx: 5
-      value: {x: 0.125000, y: 0.410000, z: 0.475000, w: 1.000000}
+      value: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
     exponent:
       typeIdx: 1
       value: 1.250000

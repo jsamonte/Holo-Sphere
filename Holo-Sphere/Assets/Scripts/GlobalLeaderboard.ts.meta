@@ -30,6 +30,7 @@
     edgeColor: false
     fetchLimit: false
     infoText: false
+    keyboardObject: false
     menuButton: false
     rowsText: false
     scrollStep: false
@@ -53,6 +54,7 @@
       upButton: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       downButton: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       menuButton: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      keyboardObject: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       visibleRows: !<float> 8.000000
       scrollStep: !<float> 4.000000
       fetchLimit: !<float> 50.000000
@@ -73,6 +75,7 @@
     - '// @input SceneObject upButton {"label":"Scroll Up Button"}'
     - '// @input SceneObject downButton {"label":"Scroll Down Button"}'
     - '// @input SceneObject menuButton {"label":"Main Menu Button"}'
+    - '// @input SceneObject keyboardObject {"label":"Name Keyboard", "hint":"SceneObject with a NameKeyboard, brought up for typing a name. Leave empty to ask for the system keyboard instead."}'
     - '// @ui {"widget":"separator"}'
     - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">List</span>"}'
     - '// @input float visibleRows = 10 {"label":"Visible Rows", "widget":"slider", "min":3, "max":15, "step":1}'

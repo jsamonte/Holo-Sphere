@@ -1,5 +1,6 @@
 import {Interactable} from "../SpectaclesInteractionKit.lspkg/Components/Interaction/Interactable/Interactable"
 import {InteractorEvent} from "../SpectaclesInteractionKit.lspkg/Core/Interactor/InteractorEvent"
+import {NameKeyboard} from "./NameKeyboard"
 
 /** One line of the board. A rank of 0 means Snap did not give one. */
 interface Entry {
@@ -76,6 +77,9 @@ function nameOf(record: Leaderboard.UserRecord): string {
  * - **Local.** With no internet, or when Snap's board cannot be reached, the headset keeps its own
  *   board instead. A run that makes it opens the keyboard for the player's name, filled in with the
  *   last one typed, and the score is kept whether or not they change it.
+ *
+ * The keyboard is the Lens's own {@link NameKeyboard} when one is assigned, since Spectacles' system
+ * keyboard does not come up. The scroll and menu buttons are hidden behind it until ENTER.
  */
 @component
 export class GlobalLeaderboard extends BaseScriptComponent {
@@ -105,6 +109,12 @@ export class GlobalLeaderboard extends BaseScriptComponent {
   @input @label("Scroll Up Button") @allowUndefined upButton: SceneObject | null = null
   @input @label("Scroll Down Button") @allowUndefined downButton: SceneObject | null = null
   @input @label("Main Menu Button") @allowUndefined menuButton: SceneObject | null = null
+
+  @input
+  @label("Name Keyboard")
+  @hint("SceneObject with a NameKeyboard, brought up for typing a name. Leave empty to ask for the system keyboard instead.")
+  @allowUndefined
+  keyboardObject: SceneObject | null = null
 
   @ui.separator
   @ui.label('<span style="color: #60A5FA;">List</span>')
@@ -165,6 +175,7 @@ export class GlobalLeaderboard extends BaseScriptComponent {
   /** This run made the headset's board and its name is still open for typing. */
   private naming = false
   private keyboardOpen = false
+  private nameKeyboard: NameKeyboard | null = null
 
   private onMainMenu: (() => void) | null = null
   private ready = false
@@ -232,6 +243,15 @@ export class GlobalLeaderboard extends BaseScriptComponent {
       return
     }
     this.ready = true
+
+    if (this.keyboardObject != null) {
+      this.nameKeyboard = this.keyboardObject.getComponent(NameKeyboard.getTypeName()) as NameKeyboard
+      if (this.nameKeyboard === null) {
+        print("GlobalLeaderboard: " + this.keyboardObject.name + " has no NameKeyboard, the system keyboard will be asked for.")
+      } else {
+        this.nameKeyboard.close()
+      }
+    }
 
     this.paint(this.titleText, this.titleColor)
     this.paint(this.infoText, this.textColor)
@@ -393,15 +413,27 @@ export class GlobalLeaderboard extends BaseScriptComponent {
       return
     }
 
+    const initial = player.name !== DEFAULT_NAME ? player.name : ""
+    const onTextChanged = (text: string) => {
+      player.name = cleanName(text)
+      this.render()
+    }
+
+    if (this.nameKeyboard !== null) {
+      this.keyboardOpen = true
+      this.setButtonsVisible(false)
+      // The row shows exactly what the keyboard holds, rather than PLAYER until the first key.
+      onTextChanged(initial)
+      this.nameKeyboard.open(initial, onTextChanged, () => this.finishNaming())
+      return
+    }
+
     const options = new TextInputSystem.KeyboardOptions()
     options.enablePreview = true
     options.keyboardType = TextInputSystem.KeyboardType.Text
     options.returnKeyType = TextInputSystem.ReturnKeyType.Done
-    options.initialText = player.name !== DEFAULT_NAME ? player.name : ""
-    options.onTextChanged = (text: string) => {
-      player.name = cleanName(text)
-      this.render()
-    }
+    options.initialText = initial
+    options.onTextChanged = onTextChanged
     options.onReturnKeyPressed = () => this.finishNaming()
     options.onKeyboardStateChanged = (isOpen: boolean) => {
       if (!isOpen) {
@@ -436,9 +468,25 @@ export class GlobalLeaderboard extends BaseScriptComponent {
 
     if (this.keyboardOpen) {
       this.keyboardOpen = false
-      global.textInputSystem.dismissKeyboard()
+      if (this.nameKeyboard !== null) {
+        this.nameKeyboard.close()
+        this.setButtonsVisible(true)
+      } else {
+        global.textInputSystem.dismissKeyboard()
+      }
     }
     this.render()
+  }
+
+  /** The scroll and menu buttons sit behind the keyboard, so they are put away while it is up. */
+  private setButtonsVisible(visible: boolean): void {
+    const buttons = [this.upButton, this.downButton, this.menuButton]
+    for (let i = 0; i < buttons.length; i++) {
+      const button = buttons[i]
+      if (button != null) {
+        button.enabled = visible
+      }
+    }
   }
 
   private setStatus(status: Status): void {
@@ -476,7 +524,7 @@ export class GlobalLeaderboard extends BaseScriptComponent {
       rows = "NO SCORES YET"
     } else {
       const end = Math.min(this.entries.length, this.first + this.rowCount())
-      info += this.naming ? "\nTYPE YOUR NAME, THEN DONE" : "\nRANKS " + (this.first + 1) + "-" + end + " OF " + this.entries.length
+      info += this.naming ? "\nTYPE YOUR NAME, THEN ENTER" : "\nRANKS " + (this.first + 1) + "-" + end + " OF " + this.entries.length
       rows = this.entries
         .slice(this.first, end)
         .map((entry) => this.formatRow(entry))

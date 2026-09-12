@@ -44,6 +44,7 @@
     minSpacing: false
     opacityPort: false
     restColor: false
+    restEmissive: false
     strobeInterval: false
   ScriptTypesHidden:
     {}
@@ -61,6 +62,7 @@
       restColor: !<Vec4> {x: 0.880000, y: 0.890000, z: 0.910000, w: 1.000000}
       mainColorMix: !<float> 1.000000
       mainEmissive: 0.600000
+      restEmissive: 0.450000
       ghostCount: !<float> 16.000000
       ghostLifetime: 0.350000
       ghostOpacity: !<float> 1.000000
@@ -86,6 +88,7 @@
     - '// @input vec4 restColor = "{0.88, 0.89, 0.91, 1}" {"label":"Rest Color", "hint":"Colour of the sphere while it is not being grabbed. Silver white by default.", "widget":"color"}'
     - '// @input float mainColorMix = 1 {"label":"Main Color Mix", "hint":"0 keeps the silver rest colour while pinched, 1 fully replaces it with the strobe colour.", "widget":"slider", "min":0, "max":1, "step":0.05}'
     - '// @input float mainEmissive = 0.6 {"label":"Main Emissive", "hint":"Emissive brightness added to the main sphere so the strobe reads as a light source rather than a tint.", "widget":"slider", "min":0, "max":4, "step":0.05}'
+    - '// @input float restEmissive = 0.45 {"label":"Rest Emissive", "hint":"Glow of the sphere while it is not being grabbed, in Rest Color. Matches Ghost Emissive to shine as bright as the afterimages.", "widget":"slider", "min":0, "max":4, "step":0.05}'
     - '// @ui {"widget":"separator"}'
     - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Trail</span>"}'
     - '// @input float ghostCount = 16 {"label":"Ghost Count", "hint":"Size of the afterimage pool. Should be at least Ghost Lifetime / Strobe Interval.", "widget":"slider", "min":3, "max":40, "step":1}'

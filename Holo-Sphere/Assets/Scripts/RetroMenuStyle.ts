@@ -16,12 +16,12 @@ interface ButtonStyle {
   flash: number
 }
 
-function withAlpha(color: vec4, alpha: number): vec4 {
+export function withAlpha(color: vec4, alpha: number): vec4 {
   return new vec4(color.x, color.y, color.z, Math.max(0, Math.min(1, alpha)))
 }
 
 /** Appends one flat rectangle facing +Z. */
-function quad(builder: MeshBuilder, x0: number, y0: number, x1: number, y1: number): void {
+export function quad(builder: MeshBuilder, x0: number, y0: number, x1: number, y1: number): void {
   const first = builder.getVerticesCount()
   builder.appendVerticesInterleaved([
     x0, y0, 0, 0, 0, 1, 0, 0,
@@ -33,7 +33,7 @@ function quad(builder: MeshBuilder, x0: number, y0: number, x1: number, y1: numb
 }
 
 /** A rectangle's outline, `thickness` wide, drawn inside its edges. */
-function outline(builder: MeshBuilder, cx: number, cy: number, w: number, h: number, thickness: number): void {
+export function outline(builder: MeshBuilder, cx: number, cy: number, w: number, h: number, thickness: number): void {
   const l = cx - w / 2
   const r = cx + w / 2
   const b = cy - h / 2
@@ -44,7 +44,7 @@ function outline(builder: MeshBuilder, cx: number, cy: number, w: number, h: num
   quad(builder, r - thickness, b + thickness, r, t - thickness)
 }
 
-function newBuilder(): MeshBuilder {
+export function newBuilder(): MeshBuilder {
   const builder = new MeshBuilder([
     {name: "position", components: 3},
     {name: "normal", components: 3},

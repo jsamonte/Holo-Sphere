@@ -113,6 +113,16 @@ export class StrobeGhostTrail extends BaseScriptComponent {
   @widget(new SliderWidget(0, 4, 0.05))
   mainEmissive: number = 0.6
 
+  /**
+   * Emissive glow of the sphere while it is not being grabbed, in the rest colour. Set here rather
+   * than on the material because the menu panel clones that same material and would glow with it.
+   */
+  @input
+  @label("Rest Emissive")
+  @hint("Glow of the sphere while it is not being grabbed, in Rest Color. Matches Ghost Emissive to shine as bright as the afterimages.")
+  @widget(new SliderWidget(0, 4, 0.05))
+  restEmissive: number = 0.45
+
   @ui.separator
   @ui.label('<span style="color: #60A5FA;">Trail</span>')
 
@@ -292,11 +302,12 @@ piling up when the sphere is pinched but held still. Set to 0 to emit on every f
     this.mainVisual.mainMaterial = sourceMaterial.clone()
     this.mainPass = this.mainVisual.mainMaterial.mainPass
 
-    // Emissive is the one part of the rest look taken from the material rather than an input,
-    // since it is the shader's own "not glowing" value.
-    if (this.emissivePort !== "") {
-      this.mainEmissiveRest = this.mainPass[this.emissivePort] ?? new vec3(0, 0, 0)
-    }
+    // At rest the sphere glows in its own rest colour, the same way a flash glows in the strobe's.
+    this.mainEmissiveRest = new vec3(
+      this.restColor.x * this.restEmissive,
+      this.restColor.y * this.restEmissive,
+      this.restColor.z * this.restEmissive
+    )
 
     this.buildGhostPool(sourceMaterial)
 

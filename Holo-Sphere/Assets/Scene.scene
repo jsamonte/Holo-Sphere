@@ -1857,6 +1857,7 @@
     - !<own> ea051366-3281-47fd-aaba-1d061941ba6d
     - !<own> 5783a4cc-5911-4632-9176-ec135836f497
     - !<own> 1e8f6092-9579-4347-8a05-87d40426729a
+    - !<own> d80fc3b1-2d15-41b6-bb9a-1ace6b8cd529
   Components:
     - !<own> f892f5b4-f054-421c-bcbe-43b14392f8c1
     - !<own> e0c3fc1b-4c90-422e-a93e-9f29cfdbe254
@@ -1977,6 +1978,7 @@
   ScriptAsset: !<reference> 98a09bb5-0dae-45df-91f7-f255cc19c36b
   ScriptInputsDefault:
     mainColorMix: true
+    restEmissive: true
     ghostCount: true
     fadeSharpness: true
     ghostScale: true
@@ -1994,9 +1996,10 @@
       colorA: !<Vec4> {x: 1.000000, y: 0.000000, z: 0.000000, w: 1.000000}
       colorB: !<Vec4> {x: 0.000000, y: 1.000000, z: 0.000000, w: 1.000000}
       colorC: !<Vec4> {x: 0.000000, y: 0.000000, z: 1.000000, w: 1.000000}
-      restColor: !<Vec4> {x: 0.440000, y: 0.445000, z: 0.455000, w: 1.000000}
+      restColor: !<Vec4> {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
       mainColorMix: !<float> 1.000000
-      mainEmissive: 0.175000
+      mainEmissive: 0.450000
+      restEmissive: 0.450000
       ghostCount: !<float> 16.000000
       ghostLifetime: 0.500000
       ghostOpacity: 0.100000
@@ -3814,6 +3817,21 @@
   ScriptTypes:
     "":
       {}
+- !<SceneObject/d80fc3b1-2d15-41b6-bb9a-1ace6b8cd529>
+  PrefabRemaps:
+    []
+  Name: Name Keyboard
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: -16.000000, z: 8.000000}
+    Rotation: {x: -15.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> f2ea4602-77ec-4774-b593-7db353f3b104
 - !<SceneObject/d8483007-3b4c-4daa-8425-4add383dbd5a>
   PrefabRemaps:
     []
@@ -4053,6 +4071,7 @@
       upButton: !<reference.SceneObject> 0cc7c457-cf3b-43bd-a582-99ff560fba6f
       downButton: !<reference.SceneObject> 46d9a880-a9e5-494f-8e6f-86f7a49063b6
       menuButton: !<reference.SceneObject> ea051366-3281-47fd-aaba-1d061941ba6d
+      keyboardObject: !<reference.SceneObject> d80fc3b1-2d15-41b6-bb9a-1ace6b8cd529
       visibleRows: !<float> 10.000000
       scrollStep: !<float> 5.000000
       fetchLimit: !<float> 50.000000
@@ -4323,6 +4342,42 @@
     []
   Components:
     - !<own> d4292da7-a7e9-44a4-b1b6-a43f54d1369a
+- !<ScriptComponent/f2ea4602-77ec-4774-b593-7db353f3b104>
+  PrefabRemaps:
+    []
+  Name: NameKeyboard
+  Enabled: true
+  ScriptAsset: !<reference> 1b28774e-ece3-4341-8e79-ff0b67845c03
+  ScriptInputsDefault:
+    frameColor: true
+    accentColor: true
+    textColor: true
+    edgeColor: true
+    fillColor: true
+    keySize: true
+    keyGap: true
+    letterSize: true
+    nameSize: true
+    maxLength: true
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      lineMaterial: !<reference.Material> a37127c0-ee7a-43de-94ef-d875fd9dc649
+      fontSource: !<reference.Text3D> d4292da7-a7e9-44a4-b1b6-a43f54d1369a
+      frameColor: !<Vec4> {x: 0.000000, y: 0.950000, z: 1.000000, w: 1.000000}
+      accentColor: !<Vec4> {x: 1.000000, y: 0.200000, z: 0.800000, w: 1.000000}
+      textColor: !<Vec4> {x: 1.000000, y: 0.400000, z: 0.850000, w: 1.000000}
+      edgeColor: !<Vec4> {x: 0.000000, y: 0.900000, z: 1.000000, w: 1.000000}
+      fillColor: !<Vec4> {x: 0.450000, y: 0.150000, z: 0.850000, w: 1.000000}
+      keySize: 2.900000
+      keyGap: 0.300000
+      letterSize: !<float> 56.000000
+      nameSize: !<float> 60.000000
+      maxLength: !<float> 12.000000
+  ScriptTypes:
+    "":
+      {}
 - !<SceneObject/f3d980c9-758a-4e51-b07d-855f3e38f33b>
   PrefabRemaps:
     []
