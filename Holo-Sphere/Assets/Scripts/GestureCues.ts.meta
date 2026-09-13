@@ -1,0 +1,80 @@
+- !<AssetImportMetadata/2e23b99c-5275-44a8-a75d-1692aaa2af1f>
+  ImportedAssetIds:
+    TypeScriptAsset: !<reference> cdfb576c-5be1-4c05-ba84-91c4896dd438
+  ImporterName: TypeScriptAssetImporter
+  PrimaryAsset: !<reference> cdfb576c-5be1-4c05-ba84-91c4896dd438
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    TypeScriptAsset: !<own> 6569bce6-86e3-45bf-88ce-eb0baa8c3957
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<TypeScriptAssetData/6569bce6-86e3-45bf-88ce-eb0baa8c3957>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: 0309b69d-69fe-43c3-834f-3e93b5dd56d0
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    dotColor: false
+    dotSize: false
+    fadeSpeed: false
+    fontSource: false
+    labelSize: false
+    lineMaterial: false
+    readyColor: false
+    ringColor: false
+    ringSize: false
+    ringThickness: false
+    showFrom: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - lineMaterial: !<reference.Material> 00000000-0000-0000-0000-000000000000
+      fontSource: !<reference.Text3D> 00000000-0000-0000-0000-000000000000
+      ringColor: !<Vec4> {x: 0.000000, y: 0.950000, z: 1.000000, w: 1.000000}
+      readyColor: !<Vec4> {x: 0.850000, y: 1.000000, z: 1.000000, w: 1.000000}
+      dotColor: !<Vec4> {x: 1.000000, y: 0.200000, z: 0.800000, w: 1.000000}
+      ringSize: 1.450000
+      ringThickness: 0.350000
+      labelSize: !<float> 44.000000
+      dotSize: 1.200000
+      showFrom: 0.250000
+      fadeSpeed: !<float> 10.000000
+  ScriptTypes:
+    -
+      {}
+  InputLines:
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Look</span>"}'
+    - '// @input Asset.Material lineMaterial {"label":"Line Material", "hint":"Unlit material the ring and dot are drawn with. Assets/Neon Line.mat, the same as the menus."}'
+    - "// @input Component.Text3D fontSource {\"label\":\"Font Source\", \"hint\":\"Any Text3D in the VT323 font, like the leaderboard's Rows. The gesture's name copies its font and material.\"}"
+    - '// @input vec4 ringColor = "{0, 0.95, 1, 1}" {"label":"Ring", "widget":"color"}'
+    - '// @input vec4 readyColor = "{0.85, 1, 1, 1}" {"label":"Registered", "hint":"Colour the ring turns once the gesture has registered.", "widget":"color"}'
+    - '// @input vec4 dotColor = "{1, 0.2, 0.8, 1}" {"label":"Poke Dot", "hint":"Dot on a fingertip the game reads as pointing, ready to poke.", "widget":"color"}'
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Layout</span>"}'
+    - '// @input float ringSize = 1.45 {"label":"Ring Size (radii)", "widget":"slider", "min":1.1, "max":3, "step":0.05}'
+    - '// @input float ringThickness = 0.35 {"label":"Ring Thickness (cm)", "widget":"slider", "min":0.1, "max":1.5, "step":0.05}'
+    - '// @input float labelSize = 44 {"label":"Label Size", "widget":"slider", "min":20, "max":100, "step":1}'
+    - '// @input float dotSize = 1.2 {"label":"Dot Size (cm)", "widget":"slider", "min":0.3, "max":3, "step":0.1}'
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Behaviour</span>"}'
+    - '// @input float showFrom = 0.25 {"label":"Show From", "hint":"How far into a gesture, 0 to 1, before its ring appears. Higher hides the ring for idle hand movement.", "widget":"slider", "min":0, "max":0.9, "step":0.05}'
+    - '// @input float fadeSpeed = 10 {"label":"Fade Speed", "widget":"slider", "min":1, "max":30, "step":0.5}'

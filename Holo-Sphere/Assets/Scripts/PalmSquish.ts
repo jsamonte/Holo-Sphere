@@ -3,6 +3,7 @@ import {InteractorInputType} from "../SpectaclesInteractionKit.lspkg/Core/Intera
 import TrackedHand, {PalmState} from "../SpectaclesInteractionKit.lspkg/Providers/HandInputData/TrackedHand"
 import {SIK} from "../SpectaclesInteractionKit.lspkg/SIK"
 import {CrushPhase, FistCrush} from "./FistCrush"
+import {Tune, tuned} from "./GestureTuning"
 import {isIndexExtended} from "./HandPose"
 import {SphereReach} from "./SphereReach"
 import {TwoHandSplit} from "./TwoHandSplit"
@@ -177,6 +178,42 @@ is or is not starting. Leave off for a shipping build."
   /** How squashed the sphere is right now: 0 round, 1 as flat as Flattest allows. */
   get squishAmount(): number {
     return clamp((1 - this.squash) / Math.max(0.01, 1 - this.flattest), 0, 1)
+  }
+
+  /**
+   * How close the hands are to squishing the sphere, for GestureCues: a little for one open palm at
+   * it, more for two, and 1 while it is being squished.
+   */
+  get compressProgress(): number {
+    if (this.phase === SquishPhase.Squishing) {
+      return 1
+    }
+    if (this.isBusy()) {
+      return 0
+    }
+
+    let ready = 0
+    const hands = [SIK.HandInputData.getHand("left"), SIK.HandInputData.getHand("right")]
+    for (let i = 0; i < hands.length; i++) {
+      if (this.palmUsable(hands[i], false) && this.palmInReach(hands[i])) {
+        ready++
+      }
+    }
+    return ready === 2 ? 0.6 : ready === 1 ? 0.2 : 0
+  }
+
+  private palmInReach(hand: TrackedHand): boolean {
+    const palm = hand.getPalmCenter()
+    if (palm === null) {
+      return false
+    }
+    const centre = this.sphereReach !== null ? this.sphereReach.nearestPoint(palm) : this.getTransform().getWorldPosition()
+    return palm.distance(centre) <= this.radius() * this.reachRadii()
+  }
+
+  /** Reach, scaled to the player by GestureTuning. */
+  private reachRadii(): number {
+    return tuned(Tune.SquishReach, this.reach)
   }
 
   onAwake(): void {
@@ -387,8 +424,9 @@ is or is not starting. Leave off for a shipping build."
       const centre =
         this.sphereReach !== null ? this.sphereReach.nearestPoint(between) : this.getTransform().getWorldPosition()
       const radius = this.radius()
+      const reach = radius * this.reachRadii()
 
-      if (a.distance(centre) > radius * this.reach || b.distance(centre) > radius * this.reach) {
+      if (a.distance(centre) > reach || b.distance(centre) > reach) {
         return null
       }
 
@@ -409,7 +447,7 @@ is or is not starting. Leave off for a shipping build."
     }
 
     return {
-      gap: length - this.palmPadding * 2,
+      gap: length - tuned(Tune.PalmPadding, this.palmPadding) * 2,
       span: length,
       axis: axis,
       middle: a.add(b).uniformScale(0.5)
@@ -551,7 +589,7 @@ is or is not starting. Leave off for a shipping build."
         " " +
         describe("R", right) +
         " reach=" +
-        (this.radius() * this.reach).toFixed(1) +
+        (this.radius() * this.reachRadii()).toFixed(1) +
         " busy=" +
         this.isBusy() +
         (pair === null ? " (no flat pair around sphere)" : " gap=" + pair.gap.toFixed(1) + " start<=" + (this.diameter() * 1.1).toFixed(1))

@@ -10,9 +10,16 @@ import {InteractorEvent} from "../SpectaclesInteractionKit.lspkg/Core/Interactor
 import {AllHandTypes, HandType} from "../SpectaclesInteractionKit.lspkg/Providers/HandInputData/HandType"
 import TrackedHand from "../SpectaclesInteractionKit.lspkg/Providers/HandInputData/TrackedHand"
 import {SIK} from "../SpectaclesInteractionKit.lspkg/SIK"
+import {Tune, tuned} from "./GestureTuning"
 import {SphereReach} from "./SphereReach"
 import {StrobeGhostTrail} from "./StrobeGhostTrail"
 import {YoyoFlick} from "./YoyoFlick"
+
+/**
+ * Seconds a hand's pinch may drop out before it counts as letting go. Pinch tracking flickers for a
+ * frame now and then, and without this every flicker would reset the pull towards a split.
+ */
+const HOLD_GRACE = 0.12
 
 /**
  * One of the two spheres the object splits into. Half A is always the original SceneObject this
@@ -224,6 +231,46 @@ world scale. Keep it below Split Pop so the sphere does not split and merge on a
   /** Whether each hand was pinching last frame, so a second hand's pinch is caught as it starts. */
   private wasPinching = new Map<string, boolean>()
 
+  /** When each held hand's pinch dropped out, while it is still inside HOLD_GRACE. */
+  private lostSince = new Map<Interactor, number>()
+
+  /** How many hands are holding the sphere. */
+  get handCount(): number {
+    return this.held.length
+  }
+
+  /**
+   * How far the two hands holding the sphere have pulled apart since their tightest grip, in sphere
+   * widths - the same measure as Split Travel. 0 unless two hands are on it.
+   */
+  currentPull(): number {
+    if (this.held.length < 2 || this.grabSeparation < 0) {
+      return 0
+    }
+    const pointA = this.interactorPoint(this.held[0])
+    const pointB = this.interactorPoint(this.held[1])
+    if (pointA === null || pointB === null) {
+      return 0
+    }
+    return Math.max(0, pointA.distance(pointB) - this.grabSeparation) / this.sphereSize()
+  }
+
+  /** How close a two handed pull is to splitting the sphere, for GestureCues. 1 once it has. */
+  get splitProgress(): number {
+    if (this.state === SplitState.Splitting || this.state === SplitState.Split) {
+      return 1
+    }
+    if (this.state !== SplitState.Idle) {
+      return 0
+    }
+    return Math.min(0.99, this.currentPull() / Math.max(0.01, this.travelThreshold()))
+  }
+
+  /** Split Travel, scaled to the player by GestureTuning. */
+  private travelThreshold(): number {
+    return tuned(Tune.SplitTravel, this.splitTravel)
+  }
+
   onAwake(): void {
     this.createEvent("OnStartEvent").bind(() => this.init())
     this.createEvent("OnDestroyEvent").bind(() => this.destroySecondSphere())
@@ -342,9 +389,22 @@ world scale. Keep it below Split Pop so the sphere does not split and merge on a
    * leaving tracking, for instance - so the held list is re-checked every frame.
    */
   private pruneHeld(): void {
+    const now = getTime()
     for (let i = this.held.length - 1; i >= 0; i--) {
       const interactor = this.held[i]
-      if (!this.stillHolding(interactor)) {
+      if (this.stillHolding(interactor)) {
+        this.lostSince.delete(interactor)
+        continue
+      }
+
+      // Held on through a brief dropout, so one bad frame of pinch tracking does not let go.
+      const since = this.lostSince.get(interactor)
+      if (since === undefined) {
+        this.lostSince.set(interactor, now)
+        continue
+      }
+      if (now - since >= HOLD_GRACE) {
+        this.lostSince.delete(interactor)
         this.release(interactor)
       }
     }
@@ -402,7 +462,7 @@ world scale. Keep it below Split Pop so the sphere does not split and merge on a
 
       // Measured to the sphere's reach - its centre stretched out towards the player by SphereReach -
       // so a pinch landing a little short in front of the sphere still takes hold.
-      const reach = this.sphereSize() * 0.5 * this.secondHandReach
+      const reach = this.sphereSize() * 0.5 * tuned(Tune.SecondHandReach, this.secondHandReach)
       const distance =
         this.sphereReach !== null
           ? this.sphereReach.distanceTo(point)
@@ -468,7 +528,7 @@ world scale. Keep it below Split Pop so the sphere does not split and merge on a
     // again splits the sphere however wide apart the hands first landed on it.
     this.grabSeparation = Math.min(this.grabSeparation, separation)
 
-    if (separation - this.grabSeparation > this.splitTravel * this.sphereSize()) {
+    if (separation - this.grabSeparation > this.travelThreshold() * this.sphereSize()) {
       this.beginSplit(interactorA, interactorB, pointA, pointB)
     }
   }

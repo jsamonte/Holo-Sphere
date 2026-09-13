@@ -1,6 +1,7 @@
 import {Interactable} from "../SpectaclesInteractionKit.lspkg/Components/Interaction/Interactable/Interactable"
 import {InteractableManipulation} from "../SpectaclesInteractionKit.lspkg/Components/Interaction/InteractableManipulation/InteractableManipulation"
 import {Interactor, TargetingMode} from "../SpectaclesInteractionKit.lspkg/Core/Interactor/Interactor"
+import {Tune, tuned} from "./GestureTuning"
 import {StrobeGhostTrail} from "./StrobeGhostTrail"
 
 /**
@@ -50,7 +51,7 @@ enum YoyoState {
  * rather than a single frame - one frame is noisy enough that a slow drag can spike over any
  * useful threshold.
  */
-class VelocityTracker {
+export class VelocityTracker {
   private positions: vec3[] = []
   private times: number[] = []
 
@@ -309,7 +310,7 @@ Releasing the pinch always returns it."
     }
 
     const velocity = this.sphereTracker.velocity()
-    if (velocity.length >= this.flickSpeed) {
+    if (velocity.length >= this.flickThreshold()) {
       this.throwOut(velocity)
     }
   }
@@ -421,7 +422,7 @@ Releasing the pinch always returns it."
     }
 
     const velocity = this.handTracker.velocity()
-    if (velocity.length < this.returnFlickSpeed) {
+    if (velocity.length < tuned(Tune.ReturnFlickSpeed, this.returnFlickSpeed)) {
       return
     }
 
@@ -498,6 +499,30 @@ Releasing the pinch always returns it."
     return (
       this.state === YoyoState.Throwing || this.state === YoyoState.Extended || this.state === YoyoState.Returning
     )
+  }
+
+  /** True while the sphere is pinched and in hand, where a flick can throw it. */
+  isHeld(): boolean {
+    return this.state === YoyoState.Held
+  }
+
+  /**
+   * How close the sphere in hand is to being flicked, for GestureCues: its speed as a fraction of the
+   * flick speed, and 1 as it is thrown.
+   */
+  get flickProgress(): number {
+    if (this.state === YoyoState.Throwing) {
+      return 1
+    }
+    if (this.state !== YoyoState.Held || this.heldTime < ARM_DELAY) {
+      return 0
+    }
+    return Math.min(0.99, this.sphereTracker.velocity().length / Math.max(1, this.flickThreshold()))
+  }
+
+  /** Flick Speed, scaled to the player by GestureTuning. */
+  private flickThreshold(): number {
+    return tuned(Tune.FlickSpeed, this.flickSpeed)
   }
 
   private getPinchPoint(): vec3 | null {

@@ -102,3 +102,66 @@ export function isPointingPose(hand: TrackedHand): boolean {
 
   return indexTip.distance(wrist) >= furthestOther * POINT_LEAD
 }
+
+/**
+ * Length of the hand from the wrist to the middle fingertip, following the finger's own bones so it
+ * reads the same whether the hand is open or curled. Null while any of those joints is missing.
+ */
+export function handLength(hand: TrackedHand): number | null {
+  const joints = [hand.wrist, hand.middleKnuckle, hand.middleMidJoint, hand.middleUpperJoint, hand.middleTip]
+
+  let length = 0
+  for (let i = 1; i < joints.length; i++) {
+    const from = joints[i - 1]?.position
+    const to = joints[i]?.position
+    if (from == null || to == null) {
+      return null
+    }
+    length += from.distance(to)
+  }
+  return length
+}
+
+/** Fingertip reach from the wrist, as a multiple of its knuckle's, of a finger held out straight. */
+const OPEN_REACH = 1.9
+
+/** The same for a finger folded tight into the palm. */
+const FOLDED_REACH = 1.15
+
+/**
+ * How far the middle, ring and little fingers have curled in, from 0 with all three held out straight
+ * to 1 with all three folded into the palm - how close the hand is to a fist.
+ */
+export function curlAmount(hand: TrackedHand): number {
+  const wrist = hand.wrist?.position
+  if (wrist == null) {
+    return 0
+  }
+
+  const fingers: Keypoint[][] = [
+    [hand.middleKnuckle, hand.middleTip],
+    [hand.ringKnuckle, hand.ringTip],
+    [hand.pinkyKnuckle, hand.pinkyTip]
+  ]
+
+  let total = 0
+  let counted = 0
+  for (let i = 0; i < fingers.length; i++) {
+    const knuckle = fingers[i][0]?.position
+    const tip = fingers[i][1]?.position
+    if (knuckle == null || tip == null) {
+      continue
+    }
+
+    const knuckleReach = knuckle.distance(wrist)
+    if (knuckleReach < 0.0001) {
+      continue
+    }
+
+    const reach = tip.distance(wrist) / knuckleReach
+    total += Math.max(0, Math.min(1, (OPEN_REACH - reach) / (OPEN_REACH - FOLDED_REACH)))
+    counted++
+  }
+
+  return counted > 0 ? total / counted : 0
+}

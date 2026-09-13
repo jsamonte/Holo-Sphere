@@ -4,6 +4,7 @@ import {AllHandTypes, HandType} from "../SpectaclesInteractionKit.lspkg/Provider
 import TrackedHand, {PalmState} from "../SpectaclesInteractionKit.lspkg/Providers/HandInputData/TrackedHand"
 import {SIK} from "../SpectaclesInteractionKit.lspkg/SIK"
 import {CrushPhase, FistCrush} from "./FistCrush"
+import {Tune, tuned} from "./GestureTuning"
 import {isIndexExtended, isPointingPose} from "./HandPose"
 import {PalmSquish, SquishPhase} from "./PalmSquish"
 import {SphereReach} from "./SphereReach"
@@ -137,6 +138,43 @@ registering. Leave off for a shipping build."
     return this.poked
   }
 
+  /**
+   * How close a pointing finger is to poking, for GestureCues: rising as the fingertip closes on the
+   * sphere from a radius away, then as it holds in, and 1 once the poke counts.
+   */
+  get pokeProgress(): number {
+    if (this.poked) {
+      return 1
+    }
+
+    let best = 0
+    for (let i = 0; i < AllHandTypes.length; i++) {
+      const handType = AllHandTypes[i]
+      const hand = SIK.HandInputData.getHand(handType)
+      if (!this.isPointing(hand)) {
+        continue
+      }
+
+      const held = this.insideTime.get(handType) ?? 0
+      if (held > 0) {
+        best = Math.max(best, 0.8 + 0.2 * Math.min(1, held / Math.max(0.01, this.delay())))
+      } else {
+        best = Math.max(best, 0.8 * Math.max(0, Math.min(1, (this.tipDepth(hand) + 1) / (this.pokeDepth() + 1))))
+      }
+    }
+    return Math.min(0.99, best)
+  }
+
+  /** Depth, scaled to the player by GestureTuning. */
+  private pokeDepth(): number {
+    return tuned(Tune.PokeDepth, this.depth)
+  }
+
+  /** Poke Delay, scaled to the player's sensitivity by GestureTuning. */
+  private delay(): number {
+    return tuned(Tune.PokeDelay, this.pokeDelay)
+  }
+
   onAwake(): void {
     this.createEvent("OnStartEvent").bind(() => this.init())
 
@@ -194,7 +232,8 @@ registering. Leave off for a shipping build."
       // Once in, the fingertip has to come back out towards the surface to leave, so the shake a
       // poke sets off cannot jostle it out again.
       const was = this.insideTime.get(handType) ?? 0
-      const needed = was > 0 ? this.depth - EXIT_SLACK : this.depth
+      const depth = this.pokeDepth()
+      const needed = was > 0 ? depth - EXIT_SLACK : depth
       const inNow = !busy && this.fingerIn(hand, other, handType, now, needed)
       const fisting = this.isFisting(hand)
 
@@ -216,7 +255,7 @@ registering. Leave off for a shipping build."
           // Out again before Poke Delay, and not because a pinch closed on it: a quick jab, which
           // counts once it is clear no pinch is following. The fingertip has to have actually left -
           // a finger that stops pointing while still inside is a hand curling into a fist, not a jab.
-          if (left && was >= JAB_MIN && was < this.pokeDelay) {
+          if (left && was >= JAB_MIN && was < this.delay()) {
             this.jabWait.set(handType, JAB_CONFIRM)
           }
           gap = 0
@@ -248,7 +287,7 @@ registering. Leave off for a shipping build."
       }
       this.jabPulse.set(handType, pulse)
 
-      if (held >= this.pokeDelay) {
+      if (held >= this.delay()) {
         poked = true
       }
     }
@@ -382,7 +421,7 @@ registering. Leave off for a shipping build."
           " tipDepth=" +
           this.tipDepth(hand).toFixed(2) +
           " need>=" +
-          this.depth.toFixed(2) +
+          this.pokeDepth().toFixed(2) +
           " heldIn=" +
           (this.insideTime.get(handType) ?? 0).toFixed(2) +
           "s sincePinch=" +

@@ -1,5 +1,6 @@
 import {Interactable} from "../SpectaclesInteractionKit.lspkg/Components/Interaction/Interactable/Interactable"
-import {newBuilder, outline, quad, withAlpha} from "./RetroMenuStyle"
+import {addVisual, makePiece, makeText, newLineMaterial, paintText, tint} from "./NeonKit"
+import {newBuilder, outline, quad} from "./RetroMenuStyle"
 
 /** One key of the layout: what it shows, what it types, and how many key widths it spans. */
 interface KeyDef {
@@ -206,8 +207,8 @@ export class NameKeyboard extends BaseScriptComponent {
   }
 
   private tintGlow(): void {
-    this.tint(this.glowLineMaterial, this.frameColor, 0.8 + 0.2 * this.flash)
-    this.tint(this.glowFillMaterial, this.fillColor, 0.3 + 0.4 * this.flash)
+    tint(this.glowLineMaterial, this.frameColor, 0.8 + 0.2 * this.flash)
+    tint(this.glowFillMaterial, this.fillColor, 0.3 + 0.4 * this.flash)
   }
 
   /**
@@ -232,10 +233,10 @@ export class NameKeyboard extends BaseScriptComponent {
     const rows = LAYOUT.length
 
     const textMaterial = this.fontSource.mainMaterial.clone()
-    this.paintText(textMaterial)
+    paintText(textMaterial, this.textColor, this.edgeColor)
 
-    this.glowLineMaterial = this.newLineMaterial()
-    this.glowFillMaterial = this.newLineMaterial()
+    this.glowLineMaterial = newLineMaterial(this.lineMaterial)
+    this.glowFillMaterial = newLineMaterial(this.lineMaterial)
     this.tintGlow()
 
     const outlines = newBuilder()
@@ -278,16 +279,16 @@ export class NameKeyboard extends BaseScriptComponent {
     outline(frame, 0, (frameTop + frameBottom) / 2, frameWidth, frameTop - frameBottom, thickness * 1.6)
 
     const owner = this.getSceneObject()
-    this.tint(this.makePiece("Keyboard Plates", owner, plates, -0.15), this.fillColor, 0.12)
-    this.tint(this.makePiece("Keyboard Outlines", owner, outlines, 0), this.accentColor, 0.6)
-    this.tint(this.makePiece("Keyboard Frame", owner, frame, 0), this.frameColor, 0.7)
+    tint(makePiece("Keyboard Plates", owner, plates, -0.15, newLineMaterial(this.lineMaterial)), this.fillColor, 0.12)
+    tint(makePiece("Keyboard Outlines", owner, outlines, 0, newLineMaterial(this.lineMaterial)), this.accentColor, 0.6)
+    tint(makePiece("Keyboard Frame", owner, frame, 0, newLineMaterial(this.lineMaterial)), this.frameColor, 0.7)
 
-    this.nameText = this.makeText("Typed Name", owner, new vec3(0, nameY, 0.05), this.nameSize, textMaterial)
+    this.nameText = makeText("Typed Name", owner, new vec3(0, nameY, 0.05), this.nameSize, this.fontSource.font, textMaterial)
   }
 
   private makeKey(def: KeyDef, cx: number, cy: number, width: number, textMaterial: Material): void {
     const size = this.keySize
-    const owner = this.makeText(def.label, this.getSceneObject(), new vec3(cx, cy, 0.05), this.letterSize, textMaterial).getSceneObject()
+    const owner = makeText(def.label, this.getSceneObject(), new vec3(cx, cy, 0.05), this.letterSize, this.fontSource!.font, textMaterial).getSceneObject()
     owner.name = "Key " + def.label
 
     // Collider before Interactable: SIK looks for the key's colliders as the Interactable wakes.
@@ -306,8 +307,8 @@ export class NameKeyboard extends BaseScriptComponent {
     glow.setParent(owner)
     glow.layer = owner.layer
     glow.getTransform().setLocalPosition(new vec3(0, 0, -0.03))
-    this.addVisual(glow, glowLine, this.glowLineMaterial!)
-    this.addVisual(glow, glowFill, this.glowFillMaterial!)
+    addVisual(glow, glowLine, this.glowLineMaterial!)
+    addVisual(glow, glowFill, this.glowFillMaterial!)
     glow.enabled = false
     this.glows.push(glow)
 
@@ -315,67 +316,5 @@ export class NameKeyboard extends BaseScriptComponent {
     interactable.onHoverEnter.add(() => (glow.enabled = true))
     interactable.onHoverExit.add(() => (glow.enabled = false))
     interactable.onTriggerStart.add(() => this.press(def))
-  }
-
-  private makeText(label: string, parent: SceneObject, position: vec3, size: number, material: Material): Text3D {
-    const owner = global.scene.createSceneObject(label)
-    owner.setParent(parent)
-    owner.layer = parent.layer
-    owner.getTransform().setLocalPosition(position)
-
-    const text = owner.createComponent("Component.Text3D") as Text3D
-    text.font = this.fontSource!.font
-    text.mainMaterial = material
-    text.size = size
-    text.horizontalAlignment = HorizontalAlignment.Center
-    text.verticalAlignment = VerticalAlignment.Center
-    text.extrusionDepth = 0.15
-    text.text = label
-    return text
-  }
-
-  /** Text3D material cloned from the Font Source, recoloured once for every key label. */
-  private paintText(material: Material): void {
-    const pass = material.mainPass as any
-    const face = withAlpha(this.textColor, 0.9)
-    const side = withAlpha(this.edgeColor, 0.8)
-    pass.frontCapStartingColor = face
-    pass.backCapStartingColor = side
-    pass.outerEdgeStartingColor = side
-    pass.outerEdgeEndingColor = side
-    pass.InnerEdgeStartingColor = side
-    pass.InnerEdgeEndingColor = side
-  }
-
-  /** A child holding one built mesh, drawn with its own clone of the line material. */
-  private makePiece(name: string, parent: SceneObject, builder: MeshBuilder, z: number): Material {
-    const piece = global.scene.createSceneObject(name)
-    piece.setParent(parent)
-    piece.layer = parent.layer
-    piece.getTransform().setLocalPosition(new vec3(0, 0, z))
-    return this.addVisual(piece, builder, this.newLineMaterial())
-  }
-
-  private addVisual(owner: SceneObject, builder: MeshBuilder, material: Material): Material {
-    builder.updateMesh()
-    const visual = owner.createComponent("Component.RenderMeshVisual") as RenderMeshVisual
-    visual.mesh = builder.getMesh()
-    visual.mainMaterial = material
-    return material
-  }
-
-  private newLineMaterial(): Material {
-    const material = this.lineMaterial!.clone()
-    const pass = material.mainPass as any
-    // Seen from either side, and never hiding the glass or each other behind a depth write.
-    pass.twoSided = true
-    pass.depthWrite = false
-    return material
-  }
-
-  private tint(material: Material | null, color: vec4, alpha: number): void {
-    if (material !== null) {
-      material.mainPass.baseColor = withAlpha(color, alpha)
-    }
   }
 }

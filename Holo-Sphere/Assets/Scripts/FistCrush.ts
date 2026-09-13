@@ -2,8 +2,21 @@ import {Interactable} from "../SpectaclesInteractionKit.lspkg/Components/Interac
 import {SIK} from "../SpectaclesInteractionKit.lspkg/SIK"
 import {AllHandTypes, HandType} from "../SpectaclesInteractionKit.lspkg/Providers/HandInputData/HandType"
 import {PalmState} from "../SpectaclesInteractionKit.lspkg/Providers/HandInputData/TrackedHand"
-import {isPointingPose} from "./HandPose"
+import {Tune, tuned} from "./GestureTuning"
+import {curlAmount, isPointingPose} from "./HandPose"
 import {SphereReach} from "./SphereReach"
+
+/**
+ * Seconds the crushing hand has to stay open before the sphere comes back. A fist's palm state
+ * flickers, and without this one open-reading frame would bring the sphere straight back out.
+ */
+const RELEASE_GRACE = 0.15
+
+/** The same for the hand dropping out of tracking, which happens more often and for longer. */
+const LOST_GRACE = 0.35
+
+/** How curled a hand in reach has to be before GestureCues starts showing it closing on the sphere. */
+const CUE_CURL = 0.25
 
 export enum CrushPhase {
   /** Full size, watching for a fist. */
@@ -103,6 +116,9 @@ a fist is or is not registering. Leave off for a shipping build."
   private phase: CrushPhase = CrushPhase.Open
   private elapsed = 0
 
+  /** Seconds the crushing hand has been open, or out of sight, while the sphere is crushed. */
+  private openTime = 0
+
   /** Full scale, captured before anything shrinks it so restoring is always exact. */
   private baseScale: vec3 = vec3.one()
 
@@ -120,6 +136,41 @@ a fist is or is not registering. Leave off for a shipping build."
    */
   get crushPhase(): CrushPhase {
     return this.phase
+  }
+
+  /**
+   * How close a hand is to crushing the sphere, for GestureCues: 0 with no hand in reach, rising as a
+   * hand in reach curls towards a fist, 1 as the crush starts.
+   */
+  get crushProgress(): number {
+    if (this.phase !== CrushPhase.Open) {
+      return this.phase === CrushPhase.Crushing ? 1 : 0
+    }
+
+    let best = 0
+    for (let i = 0; i < AllHandTypes.length; i++) {
+      const handType = AllHandTypes[i]
+      if (this.allowedHand !== "either" && this.allowedHand !== handType) {
+        continue
+      }
+
+      // A pinching or pointing hand curls its other fingers too, but is grabbing or poking.
+      const hand = SIK.HandInputData.getHand(handType)
+      if (hand === null || !hand.isTracked() || hand.isPinching() || isPointingPose(hand)) {
+        continue
+      }
+
+      const palm = hand.getPalmCenter()
+      if (palm === null || this.distanceToSphere(palm) > this.reach()) {
+        continue
+      }
+
+      const curl = curlAmount(hand)
+      if (curl >= CUE_CURL) {
+        best = Math.max(best, 0.3 + 0.7 * curl)
+      }
+    }
+    return Math.min(0.99, best)
   }
 
   onAwake(): void {
@@ -283,7 +334,7 @@ a fist is or is not registering. Leave off for a shipping build."
     const scale = this.baseScale
     const largest = Math.max(scale.x, Math.max(scale.y, scale.z))
 
-    return largest * 0.5 * this.grabRadius
+    return largest * 0.5 * tuned(Tune.CrushRadius, this.grabRadius)
   }
 
   private advanceCrush(deltaTime: number): void {
@@ -308,13 +359,22 @@ a fist is or is not registering. Leave off for a shipping build."
     }
 
     const hand = SIK.HandInputData.getHand(this.holder)
+    const tracked = hand !== null && hand.isTracked()
 
     // A hand that stops being tracked counts as letting go, otherwise the sphere would be stranded
     // whenever the fist left the camera's view while still closed.
-    const stillClosed = hand !== null && hand.isTracked() && hand.palmState === PalmState.Closed
+    const stillClosed = tracked && hand.palmState === PalmState.Closed
     if (stillClosed) {
+      this.openTime = 0
       return
     }
+
+    // Only once it has stayed open, or out of sight, for a moment: the palm state of a fist flickers.
+    this.openTime += getDeltaTime()
+    if (this.openTime < (tracked ? RELEASE_GRACE : LOST_GRACE)) {
+      return
+    }
+    this.openTime = 0
 
     if (this.reappearAtHand && hand !== null && hand.isTracked()) {
       const palm = hand.getPalmCenter()

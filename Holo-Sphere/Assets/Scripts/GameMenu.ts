@@ -1,5 +1,6 @@
 import {Interactable} from "../SpectaclesInteractionKit.lspkg/Components/Interaction/Interactable/Interactable"
 import {InteractorEvent} from "../SpectaclesInteractionKit.lspkg/Core/Interactor/InteractorEvent"
+import {CalibrationMode} from "./CalibrationMode"
 import {FingerPoke} from "./FingerPoke"
 import {CrushPhase, FistCrush} from "./FistCrush"
 import {GlobalLeaderboard} from "./GlobalLeaderboard"
@@ -66,7 +67,9 @@ const enum Stage {
   /** The Ending Sequence is playing before the menu, or a rhythm mode's leaderboard, comes up. */
   Ending,
   /** Rhythm game over: the mode's leaderboard is up until its Main Menu button is pressed. */
-  Leaderboard
+  Leaderboard,
+  /** The Calibration panel is up, measuring the player, until it hands back to the menu. */
+  Calibrating
 }
 
 /**
@@ -92,6 +95,10 @@ const enum Stage {
  * global leaderboard the moment the run ends, or with no internet kept on the headset under a name
  * the player types. The leaderboard takes the menu's place once the Ending Sequence is over, and
  * its Main Menu button brings the menu back. The Tutorial is not scored.
+ *
+ * **Calibrate** brings up the Calibration panel over its own music: the player's hand size,
+ * each gesture done a few times, and a sensitivity, all saved on the headset for every mode. See
+ * CalibrationMode. Its Done or Exit brings the menu back.
  *
  * The beat clock is the music's own playback position rather than a timer, so the orders cannot
  * drift away from the song however long the run goes on, including across the song looping. The
@@ -146,6 +153,17 @@ export class GameMenu extends BaseScriptComponent {
   hardButton: SceneObject | null = null
 
   @input
+  @label("Calibrate Button")
+  @allowUndefined
+  calibrateButton: SceneObject | null = null
+
+  @input
+  @label("Calibration")
+  @hint("The Calibration panel, whose CalibrationMode measures the player's hands and gestures. Left empty, the Calibrate button does nothing.")
+  @allowUndefined
+  calibrationRoot: SceneObject | null = null
+
+  @input
   @label("Leaderboard")
   @hint(
     "The Leaderboard panel, whose GlobalLeaderboard shows each rhythm mode's top scores after a run - \
@@ -170,6 +188,12 @@ global, or the headset's own when offline. Left empty, runs go straight back to 
   @input @label("Easy Music") @allowUndefined easyMusic: AudioTrackAsset | null = null
   @input @label("Medium Music") @allowUndefined mediumMusic: AudioTrackAsset | null = null
   @input @label("Hard Music") @allowUndefined hardMusic: AudioTrackAsset | null = null
+
+  @input
+  @label("Calibration Music")
+  @hint("Loops while the Calibration panel is up. Left empty, calibration uses the Tutorial Music.")
+  @allowUndefined
+  calibrationMusic: AudioTrackAsset | null = null
 
   @ui.separator
   @ui.label('<span style="color: #60A5FA;">Orders</span>')
@@ -505,6 +529,7 @@ slightly off the beat on device."
   private musicTrack: AudioTrackAsset | null = null
 
   private board: GlobalLeaderboard | null = null
+  private calibration: CalibrationMode | null = null
 
   private split: TwoHandSplit | null = null
   private yoyo: YoyoFlick | null = null
@@ -559,6 +584,11 @@ slightly off the beat on device."
     this.bindButton(this.mediumButton, Mode.Medium)
     this.bindButton(this.hardButton, Mode.Hard)
 
+    if (this.calibrationRoot != null) {
+      this.calibration = this.calibrationRoot.getComponent(CalibrationMode.getTypeName()) as CalibrationMode
+    }
+    this.bindCalibrateButton()
+
     this.showMenu(true)
 
     this.createEvent("UpdateEvent").bind(() => this.onUpdate())
@@ -581,6 +611,45 @@ slightly off the beat on device."
         this.startRun(mode)
       }
     })
+  }
+
+  private bindCalibrateButton(): void {
+    if (this.calibrateButton == null) {
+      return
+    }
+
+    const interactable = this.calibrateButton.getComponent(Interactable.getTypeName()) as Interactable
+    if (interactable === null) {
+      print("GameMenu: " + this.calibrateButton.name + " has no Interactable, it will not be clickable.")
+      return
+    }
+
+    interactable.onInteractorTriggerStart.add((_event: InteractorEvent) => {
+      if (this.stage === Stage.Menu) {
+        this.startCalibration()
+      }
+    })
+  }
+
+  /** The sphere comes out for the player to calibrate against, over the calibration's own music. */
+  private startCalibration(): void {
+    if (this.calibration === null) {
+      print("GameMenu: no Calibration assigned, or it has no CalibrationMode.")
+      return
+    }
+
+    this.resetSphere()
+    this.showMenu(false)
+    this.playMusic(this.calibrationMusic != null ? this.calibrationMusic : this.tutorialMusic)
+    this.stage = Stage.Calibrating
+    this.calibration.start(() => this.finishCalibration())
+  }
+
+  private finishCalibration(): void {
+    if (this.stage !== Stage.Calibrating) {
+      return
+    }
+    this.returnToMenu()
   }
 
   private startRun(mode: Mode): void {

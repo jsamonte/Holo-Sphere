@@ -30,6 +30,9 @@
     beatOffset: false
     beatsPerBar: false
     bpm: false
+    calibrateButton: false
+    calibrationMusic: false
+    calibrationRoot: false
     collapseInstruction: false
     collapseOrder: false
     compressDepth: false
@@ -98,12 +101,15 @@
       easyButton: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       mediumButton: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       hardButton: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      calibrateButton: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      calibrationRoot: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       leaderboardRoot: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       menuMusic: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
       tutorialMusic: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
       easyMusic: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
       mediumMusic: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
       hardMusic: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      calibrationMusic: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
       duplicateOrder: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
       yoyoOrder: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
       collapseOrder: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
@@ -162,6 +168,8 @@
     - '// @input SceneObject easyButton {"label":"Easy Button"}'
     - '// @input SceneObject mediumButton {"label":"Medium Button"}'
     - '// @input SceneObject hardButton {"label":"Hard Button"}'
+    - '// @input SceneObject calibrateButton {"label":"Calibrate Button"}'
+    - "// @input SceneObject calibrationRoot {\"label\":\"Calibration\", \"hint\":\"The Calibration panel, whose CalibrationMode measures the player's hands and gestures. Left empty, the Calibrate button does nothing.\"}"
     - "// @input SceneObject leaderboardRoot {\"label\":\"Leaderboard\", \"hint\":\"The Leaderboard panel, whose GlobalLeaderboard shows each rhythm mode's top scores after a run - global, or the headset's own when offline. Left empty, runs go straight back to the menu.\"}"
     - '// @ui {"widget":"separator"}'
     - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Music</span>"}'
@@ -171,6 +179,7 @@
     - '// @input Asset.AudioTrackAsset easyMusic {"label":"Easy Music"}'
     - '// @input Asset.AudioTrackAsset mediumMusic {"label":"Medium Music"}'
     - '// @input Asset.AudioTrackAsset hardMusic {"label":"Hard Music"}'
+    - '// @input Asset.AudioTrackAsset calibrationMusic {"label":"Calibration Music", "hint":"Loops while the Calibration panel is up. Left empty, calibration uses the Tutorial Music."}'
     - '// @ui {"widget":"separator"}'
     - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Orders</span>"}'
     - '// @input Asset.AudioTrackAsset duplicateOrder {"label":"Duplicate It"}'
