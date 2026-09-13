@@ -32,6 +32,8 @@
     maxHandScale: false
     minHandScale: false
     referenceHandLength: false
+    sensitivity: false
+    showHints: false
   ScriptTypesHidden:
     {}
   ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
@@ -44,8 +46,10 @@
     - referenceHandLength: 18.500000
       minHandScale: 0.800000
       maxHandScale: 1.250000
+      sensitivity: low
       lowFactor: 1.300000
       highFactor: 0.750000
+      showHints: true
       debugLog: false
   ScriptTypes:
     -
@@ -58,6 +62,8 @@
     - '// @input float maxHandScale = 1.25 {"label":"Largest Scale", "hint":"Most the thresholds grow for a large hand.", "widget":"slider", "min":1, "max":1.5, "step":0.05}'
     - '// @ui {"widget":"separator"}'
     - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Sensitivity</span>"}'
+    - '// @input string sensitivity = "low" {"label":"Sensitivity", "hint":"How big a movement every gesture needs, for every player. Low needs bigger movements, High smaller ones.", "widget":"combobox", "values":[{"label":"Low", "value":"low"}, {"label":"Normal", "value":"normal"}, {"label":"High", "value":"high"}]}'
     - '// @input float lowFactor = 1.3 {"label":"Low", "hint":"How much bigger every movement has to be on Low.", "widget":"slider", "min":1, "max":2, "step":0.05}'
     - '// @input float highFactor = 0.75 {"label":"High", "hint":"How much smaller every movement can be on High.", "widget":"slider", "min":0.4, "max":1, "step":0.05}'
-    - '// @input bool debugLog {"label":"Debug Log", "hint":"Print the hand length, sensitivity and calibrated values whenever they change."}'
+    - "// @input bool showHints = true {\"label\":\"Show Hints\", \"hint\":\"Show GestureCues' rings and dots during play. They always show during calibration.\"}"
+    - '// @input bool debugLog {"label":"Debug Log", "hint":"Print the hand length and calibrated values whenever they change."}'

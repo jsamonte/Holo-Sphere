@@ -1762,6 +1762,7 @@
       easyMusic: !<reference.AudioTrackAsset> de5ef5d1-d4ca-432e-aeb6-a5a52c5ba054
       mediumMusic: !<reference.AudioTrackAsset> 7ef4f66a-2b51-4c6c-ad40-8e60ecf93b0e
       hardMusic: !<reference.AudioTrackAsset> b1bc8376-6f1f-4e6e-be82-e4cfd6335f50
+      calibrationMusic: !<reference.AudioTrackAsset> 3e79bfe3-2c1d-4ff6-a933-4c780a5dcd07
       duplicateOrder: !<reference.AudioTrackAsset> d17cad83-62e3-4dde-b9a0-3f495f1bb89e
       yoyoOrder: !<reference.AudioTrackAsset> e7952a39-ef3a-4b18-93e2-537df6b2e372
       collapseOrder: !<reference.AudioTrackAsset> e2dfee59-fe45-4902-a5a1-b6240f066be4
@@ -2712,8 +2713,10 @@
     referenceHandLength: true
     minHandScale: true
     maxHandScale: true
+    sensitivity: true
     lowFactor: true
     highFactor: true
+    showHints: true
     debugLog: true
   ScriptTypesDefault:
     {}
@@ -2722,8 +2725,10 @@
       referenceHandLength: 18.500000
       minHandScale: 0.800000
       maxHandScale: 1.250000
+      sensitivity: low
       lowFactor: 1.300000
       highFactor: 0.750000
+      showHints: true
       debugLog: false
   ScriptTypes:
     "":

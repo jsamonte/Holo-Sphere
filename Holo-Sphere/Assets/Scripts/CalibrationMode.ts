@@ -3,7 +3,7 @@ import {PalmState} from "../SpectaclesInteractionKit.lspkg/Providers/HandInputDa
 import {SIK} from "../SpectaclesInteractionKit.lspkg/SIK"
 import {FingerPoke} from "./FingerPoke"
 import {CrushPhase, FistCrush} from "./FistCrush"
-import {GestureTuning, Sensitivity, Tune} from "./GestureTuning"
+import {GestureTuning, Tune} from "./GestureTuning"
 import {isPointingPose} from "./HandPose"
 import {NeonButton, NeonStyle, makePiece, makeText, newLineMaterial, paintText, tint} from "./NeonKit"
 import {PalmSquish, SquishPhase} from "./PalmSquish"
@@ -19,12 +19,12 @@ enum Step {
   Collapse,
   Compress,
   Poke,
-  Settings
+  Finish
 }
 
 const STEP_COUNT = 7
 
-const TITLES = ["HAND SIZE", "YOYO", "DUPLICATE", "COLLAPSE", "COMPRESS", "POKE", "SENSITIVITY"]
+const TITLES = ["HAND SIZE", "YOYO", "DUPLICATE", "COLLAPSE", "COMPRESS", "POKE", "ALL SET"]
 
 const PROMPTS = [
   "HOLD BOTH HANDS UP IN FRONT OF YOU\nWITH YOUR FINGERS SPREAD",
@@ -33,7 +33,7 @@ const PROMPTS = [
   "CLOSE YOUR FIST AROUND THE SPHERE\nOPEN IT TO BRING IT BACK",
   "PRESS THE SPHERE FLAT\nBETWEEN TWO OPEN PALMS",
   "POKE THE SPHERE\nWITH ONE FINGER",
-  "HIGH NEEDS SMALLER MOVES, LOW BIGGER\nHINTS SHOW WHAT THE GAME SEES"
+  "YOUR GESTURES ARE SAVED FOR EVERY MODE\nRESET CLEARS THEM, DONE FINISHES"
 ]
 
 /** Hand measurements taken before the hand size is kept - both hands, ten a second. */
@@ -79,8 +79,8 @@ function median(values: number[]): number {
  *    speed, pull and poke depth, and a comfortable margin over how far from the sphere their fist and
  *    palms usually close. Each result is kept within sensible limits of the Inspector value, so one
  *    odd attempt cannot make a gesture impossible.
- * 3. **Sensitivity.** Low, Normal or High on top of all of it, whether Hints stay on in play, and a
- *    Reset back to the defaults.
+ * 3. **Finish.** Done, or Reset back to the default gestures. Sensitivity is not the player's to
+ *    choose: GestureTuning's Inspector sets it for everyone.
  *
  * Any step can be skipped, which keeps whatever that gesture had before, and Exit leaves with what
  * has been done so far. GameMenu brings this up from the Calibrate button and gets the menu back
@@ -300,7 +300,7 @@ export class CalibrationMode extends BaseScriptComponent {
       }
     }
 
-    if (step !== Step.Hands && step !== Step.Settings) {
+    if (step !== Step.Hands && step !== Step.Finish) {
       this.homeSphere()
     }
 
@@ -309,7 +309,7 @@ export class CalibrationMode extends BaseScriptComponent {
 
     if (step === Step.Hands) {
       this.setText(this.statusText, "MEASURING 0%")
-    } else if (step === Step.Settings) {
+    } else if (step === Step.Finish) {
       this.setText(this.statusText, this.settingsSummary())
     } else {
       this.setText(this.statusText, "DONE 0 OF " + this.attemptCount())
@@ -320,7 +320,7 @@ export class CalibrationMode extends BaseScriptComponent {
   }
 
   private nextStep(): void {
-    if (this.step < Step.Settings) {
+    if (this.step < Step.Finish) {
       this.enterStep(this.step + 1)
     }
   }
@@ -751,46 +751,14 @@ export class CalibrationMode extends BaseScriptComponent {
     this.audio.play(1)
   }
 
-  // ---- Settings ----
-
-  private setSensitivity(value: Sensitivity): void {
-    const tuning = GestureTuning.get()
-    if (tuning !== null) {
-      tuning.sensitivity = value
-    }
-    this.refreshSettings()
-  }
-
-  private toggleHints(): void {
-    const tuning = GestureTuning.get()
-    if (tuning !== null) {
-      tuning.hints = !tuning.hints
-    }
-    this.refreshSettings()
-  }
+  // ---- Finish ----
 
   private resetCalibration(): void {
     const tuning = GestureTuning.get()
     if (tuning !== null) {
       tuning.clearCalibration()
-      tuning.sensitivity = "normal"
     }
-    this.refreshSettings()
     this.setText(this.statusText, "BACK TO THE DEFAULT GESTURES")
-  }
-
-  private refreshSettings(): void {
-    const tuning = GestureTuning.get()
-    const sensitivity = tuning !== null ? tuning.sensitivity : "normal"
-
-    this.buttons.low.setSelected(sensitivity === "low")
-    this.buttons.normal.setSelected(sensitivity === "normal")
-    this.buttons.high.setSelected(sensitivity === "high")
-    this.buttons.hints.setLabel(tuning === null || tuning.hints ? "HINTS: ON" : "HINTS: OFF")
-
-    if (this.step === Step.Settings) {
-      this.setText(this.statusText, this.settingsSummary())
-    }
   }
 
   private settingsSummary(): string {
@@ -800,7 +768,7 @@ export class CalibrationMode extends BaseScriptComponent {
 
   // ---- Panel ----
 
-  /** Gesture steps offer Skip and Exit; the last step its settings and Done. */
+  /** Gesture steps offer Skip and Exit; the last step Reset and Done. */
   private layoutButtons(): void {
     if (!this.built) {
       return
@@ -811,10 +779,8 @@ export class CalibrationMode extends BaseScriptComponent {
       this.buttons[names[i]].setVisible(false)
     }
 
-    if (this.step === Step.Settings) {
-      this.layoutRow([this.buttons.low, this.buttons.normal, this.buttons.high], -4.6)
-      this.layoutRow([this.buttons.hints, this.buttons.reset, this.buttons.done], -9)
-      this.refreshSettings()
+    if (this.step === Step.Finish) {
+      this.layoutRow([this.buttons.reset, this.buttons.done], -6.5)
     } else {
       this.layoutRow([this.buttons.skip, this.buttons.exit], -6.5)
     }
@@ -882,10 +848,6 @@ export class CalibrationMode extends BaseScriptComponent {
     this.buttons = {
       skip: button("SKIP", 9, () => this.nextStep()),
       exit: button("EXIT", 9, () => this.finish()),
-      low: button("LOW", 9.5, () => this.setSensitivity("low")),
-      normal: button("NORMAL", 9.5, () => this.setSensitivity("normal")),
-      high: button("HIGH", 9.5, () => this.setSensitivity("high")),
-      hints: button("HINTS: ON", 13.5, () => this.toggleHints()),
       reset: button("RESET", 9, () => this.resetCalibration()),
       done: button("DONE", 9, () => this.finish())
     }

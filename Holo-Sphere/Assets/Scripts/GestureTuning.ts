@@ -15,8 +15,6 @@ export enum Tune {
   PokeDelay
 }
 
-export type Sensitivity = "low" | "normal" | "high"
-
 const enum Kind {
   /** A bar the hand has to clear - a speed, a pull, a depth, a hold. Easier is lower. */
   Bar,
@@ -47,8 +45,6 @@ RULES[Tune.PokeDelay] = {kind: Kind.Bar, handScaled: false, calibrated: null}
 
 /** Everything kept on the headset between sessions. */
 interface Saved {
-  sensitivity: Sensitivity
-  hints: boolean
   /** The hand length calibration last measured, in cm. 0 when it never has. */
   handLength: number
   calibrated: {[name: string]: number}
@@ -94,8 +90,8 @@ export function tuned(tune: Tune, base: number): number {
  *   same game without doing anything.
  * - **Calibration.** CalibrationMode measures how this player actually does each gesture and saves
  *   a threshold for it, which replaces the Inspector value from then on.
- * - **Sensitivity.** Low, Normal or High, scaling every threshold together: High needs smaller
- *   movements, Low bigger ones.
+ * - **Sensitivity.** Set here for everyone, never by the player, scaling every threshold together:
+ *   Low needs bigger movements, High smaller ones.
  * - **Hints.** Whether GestureCues shows its rings and dots during play.
  *
  * Put one on any object that is always enabled. Scripts reach it through {@link tuned}.
@@ -127,6 +123,18 @@ export class GestureTuning extends BaseScriptComponent {
   @ui.label('<span style="color: #60A5FA;">Sensitivity</span>')
 
   @input
+  @label("Sensitivity")
+  @hint("How big a movement every gesture needs, for every player. Low needs bigger movements, High smaller ones.")
+  @widget(
+    new ComboBoxWidget([
+      new ComboBoxItem("Low", "low"),
+      new ComboBoxItem("Normal", "normal"),
+      new ComboBoxItem("High", "high")
+    ])
+  )
+  sensitivity: string = "low"
+
+  @input
   @label("Low")
   @hint("How much bigger every movement has to be on Low.")
   @widget(new SliderWidget(1, 2, 0.05))
@@ -139,14 +147,19 @@ export class GestureTuning extends BaseScriptComponent {
   highFactor: number = 0.75
 
   @input
+  @label("Show Hints")
+  @hint("Show GestureCues' rings and dots during play. They always show during calibration.")
+  showHints: boolean = true
+
+  @input
   @label("Debug Log")
-  @hint("Print the hand length, sensitivity and calibrated values whenever they change.")
+  @hint("Print the hand length and calibrated values whenever they change.")
   debugLog: boolean = false
 
-  /** Set by CalibrationMode while it runs, which also keeps GestureCues showing whatever Hints says. */
+  /** Set by CalibrationMode while it runs, which keeps GestureCues showing whatever Show Hints says. */
   calibrating = false
 
-  private saved: Saved = {sensitivity: "normal", hints: true, handLength: 0, calibrated: {}}
+  private saved: Saved = {handLength: 0, calibrated: {}}
   private samples: number[] = []
   private sampleTimer = 0
   private overrides = new Map<Tune, number>()
@@ -183,27 +196,9 @@ export class GestureTuning extends BaseScriptComponent {
     return value
   }
 
-  get sensitivity(): Sensitivity {
-    return this.saved.sensitivity
-  }
-
-  set sensitivity(value: Sensitivity) {
-    this.saved.sensitivity = value
-    this.save()
-  }
-
-  get hints(): boolean {
-    return this.saved.hints
-  }
-
-  set hints(value: boolean) {
-    this.saved.hints = value
-    this.save()
-  }
-
-  /** Whether GestureCues should be showing: Hints on, or calibration running. */
+  /** Whether GestureCues should be showing: Show Hints on, or calibration running. */
   get showCues(): boolean {
-    return this.saved.hints || this.calibrating
+    return this.showHints || this.calibrating
   }
 
   /**
@@ -275,7 +270,7 @@ export class GestureTuning extends BaseScriptComponent {
   }
 
   private sensitivityFactor(): number {
-    switch (this.saved.sensitivity) {
+    switch (this.sensitivity) {
       case "low":
         return this.lowFactor
       case "high":
@@ -319,8 +314,6 @@ export class GestureTuning extends BaseScriptComponent {
     try {
       const loaded = JSON.parse(json) as Partial<Saved>
       this.saved = {
-        sensitivity: loaded.sensitivity === "low" || loaded.sensitivity === "high" ? loaded.sensitivity : "normal",
-        hints: loaded.hints !== false,
         handLength: typeof loaded.handLength === "number" ? loaded.handLength : 0,
         calibrated: loaded.calibrated != null ? loaded.calibrated : {}
       }

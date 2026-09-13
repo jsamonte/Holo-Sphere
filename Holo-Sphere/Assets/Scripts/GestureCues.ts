@@ -18,6 +18,15 @@ const SEGMENTS = 48
 /** How far from the sphere, in radii, a pointing fingertip shows its dot. */
 const DOT_RANGE = 3
 
+/** How far out, as a multiple of the crush zone, an open hand brings up the collapse guide. */
+const GUIDE_RANGE = 1.8
+
+/** Compress progress from which two open palms are taken to be setting up a compress, not a collapse. */
+const COMPRESS_SETUP = 0.6
+
+/** How much the crush zone may change size before its ring is rebuilt to match. */
+const ZONE_REBUILD = 0.05
+
 /** The gesture the sphere reads the hands as closest to doing, and how close: 1 once it has registered. */
 interface Cue {
   name: string
@@ -40,6 +49,20 @@ function segmentIndices(i: number): number[] {
   return [first, first + 1, first + 2, first, first + 2, first + 3]
 }
 
+/** A whole ring of SEGMENTS pieces, clockwise from the top like a dial filling. */
+function ringMesh(radius: number, thickness: number): MeshBuilder {
+  const builder = newBuilder()
+  const indices: number[] = []
+  for (let i = 0; i < SEGMENTS; i++) {
+    const from = Math.PI / 2 - (i / SEGMENTS) * Math.PI * 2
+    const to = Math.PI / 2 - ((i + 1) / SEGMENTS) * Math.PI * 2
+    appendSegment(builder, from, to, radius - thickness / 2, radius + thickness / 2)
+    indices.push(...segmentIndices(i))
+  }
+  builder.appendIndices(indices)
+  return builder
+}
+
 /**
  * Shows the player what the game sees their hands doing, so they can adjust instead of guessing.
  *
@@ -48,6 +71,10 @@ function segmentIndices(i: number): number[] {
  *   stretching towards the split, a fist closing, palms coming in, a finger pushing in.
  * - **Dot.** A dot on any fingertip the game reads as pointing, near the sphere - the poke pose it
  *   is looking for.
+ * - **Collapse guide.** With an open hand near the sphere, a ring marks the zone the palm has to be
+ *   inside for a fist to crush it, and a dot on the palm turns from pink to cyan once it is - so the
+ *   player knows where to close their hand. Two open palms at the sphere are setting up a compress,
+ *   and get no guide.
  *
  * Every gesture script works out its own progress, so the ring always agrees with what will count.
  * Shown whenever GestureTuning's Hints are on, and always during calibration. Put this on the sphere
@@ -145,6 +172,13 @@ export class GestureCues extends BaseScriptComponent {
   private dot: SceneObject | null = null
   private dotMaterial: Material | null = null
 
+  private zone: SceneObject | null = null
+  private zoneVisual: RenderMeshVisual | null = null
+  private zoneMaterial: Material | null = null
+  private zoneRadius = 0
+  private palmDot: SceneObject | null = null
+  private palmMaterial: Material | null = null
+
   private shownSegments = -1
   private opacity = 0
   private lastCue: Cue = {name: "", progress: 0}
@@ -178,26 +212,14 @@ export class GestureCues extends BaseScriptComponent {
 
   private build(layer: LayerSet): void {
     const radius = this.baseRadius * this.ringSize
-    const inner = radius - this.ringThickness / 2
     const outer = radius + this.ringThickness / 2
 
     const root = global.scene.createSceneObject("Gesture Cue Ring")
     root.layer = layer
     this.root = root
 
-    // Clockwise from the top, like a dial filling.
-    const track = newBuilder()
-    const arc = newBuilder()
-    const indices: number[] = []
-    for (let i = 0; i < SEGMENTS; i++) {
-      const from = Math.PI / 2 - (i / SEGMENTS) * Math.PI * 2
-      const to = Math.PI / 2 - ((i + 1) / SEGMENTS) * Math.PI * 2
-      appendSegment(track, from, to, inner, outer)
-      appendSegment(arc, from, to, inner, outer)
-      indices.push(...segmentIndices(i))
-    }
-    track.appendIndices(indices)
-    arc.appendIndices(indices)
+    const track = ringMesh(radius, this.ringThickness)
+    const arc = ringMesh(radius, this.ringThickness)
 
     this.trackMaterial = addVisual(root, track, newLineMaterial(this.lineMaterial!))
 
@@ -221,6 +243,22 @@ export class GestureCues extends BaseScriptComponent {
     this.dotMaterial = addVisual(dot, dotMesh, newLineMaterial(this.lineMaterial!))
     this.dot = dot
 
+    // The collapse zone's ring is built on first use, once the zone's size is known.
+    const zone = global.scene.createSceneObject("Collapse Guide Zone")
+    zone.layer = layer
+    this.zoneVisual = zone.createComponent("Component.RenderMeshVisual") as RenderMeshVisual
+    this.zoneMaterial = newLineMaterial(this.lineMaterial!)
+    this.zoneVisual.mainMaterial = this.zoneMaterial
+    this.zone = zone
+
+    const palmMesh = newBuilder()
+    const palmHalf = this.dotSize * 0.8
+    quad(palmMesh, -palmHalf, -palmHalf, palmHalf, palmHalf)
+    const palmDot = global.scene.createSceneObject("Collapse Guide Palm")
+    palmDot.layer = layer
+    this.palmMaterial = addVisual(palmDot, palmMesh, newLineMaterial(this.lineMaterial!))
+    this.palmDot = palmDot
+
     this.hideAll()
   }
 
@@ -237,6 +275,58 @@ export class GestureCues extends BaseScriptComponent {
 
     this.updateRing()
     this.updateDot(wanted)
+    this.updateCollapseGuide(wanted)
+  }
+
+  /**
+   * With an open hand near the sphere: a ring round the zone its palm has to be inside to crush the
+   * sphere, and a dot on the palm, pink outside the zone and cyan inside it.
+   */
+  private updateCollapseGuide(wanted: boolean): void {
+    const zone = this.zone
+    const palmDot = this.palmDot
+    if (zone === null || palmDot === null) {
+      return
+    }
+
+    const settingUpCompress = this.squish !== null && this.squish.compressProgress >= COMPRESS_SETUP
+    const guide = wanted && !settingUpCompress && this.crush !== null ? this.crush.crushGuide(GUIDE_RANGE) : null
+
+    if (guide === null) {
+      zone.enabled = false
+      palmDot.enabled = false
+      return
+    }
+
+    this.fitZone(guide.radius)
+    zone.enabled = true
+    const zoneTransform = zone.getTransform()
+    zoneTransform.setWorldPosition(guide.centre)
+    zoneTransform.setWorldRotation(this.facingCamera(guide.centre))
+    tint(this.zoneMaterial, guide.inside ? this.readyColor : this.ringColor, guide.inside ? 0.75 : 0.35)
+
+    palmDot.enabled = true
+    const toCamera = this.camera.getWorldPosition().sub(guide.palm)
+    const lift = toCamera.length > 0.0001 ? toCamera.normalize().uniformScale(1.5) : vec3.zero()
+    const palmTransform = palmDot.getTransform()
+    palmTransform.setWorldPosition(guide.palm.add(lift))
+    palmTransform.setWorldRotation(this.facingCamera(guide.palm))
+    tint(this.palmMaterial, guide.inside ? this.ringColor : this.dotColor, 0.9)
+  }
+
+  /** Rebuilds the zone's ring when the crush zone has changed size, as calibration can make it. */
+  private fitZone(radius: number): void {
+    if (this.zoneVisual === null) {
+      return
+    }
+    if (this.zoneRadius > 0 && Math.abs(radius - this.zoneRadius) <= this.zoneRadius * ZONE_REBUILD) {
+      return
+    }
+    this.zoneRadius = radius
+
+    const builder = ringMesh(radius, this.ringThickness)
+    builder.updateMesh()
+    this.zoneVisual.mesh = builder.getMesh()
   }
 
   /** Every gesture's own progress, and the one furthest along. */
@@ -377,6 +467,12 @@ export class GestureCues extends BaseScriptComponent {
     }
     if (this.dot !== null) {
       this.dot.enabled = false
+    }
+    if (this.zone !== null) {
+      this.zone.enabled = false
+    }
+    if (this.palmDot !== null) {
+      this.palmDot.enabled = false
     }
   }
 }

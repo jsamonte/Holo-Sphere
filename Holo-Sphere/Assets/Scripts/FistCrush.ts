@@ -18,6 +18,18 @@ const LOST_GRACE = 0.35
 /** How curled a hand in reach has to be before GestureCues starts showing it closing on the sphere. */
 const CUE_CURL = 0.25
 
+/** Where a hand has to put its palm to crush the sphere, for GestureCues to draw. */
+export interface CrushGuide {
+  /** The palm's centre. */
+  palm: vec3
+  /** The point of the sphere's reach the palm is measured to. */
+  centre: vec3
+  /** How close to `centre` the palm has to be, in world units. */
+  radius: number
+  /** Whether the palm is already close enough, so closing the fist would crush. */
+  inside: boolean
+}
+
 export enum CrushPhase {
   /** Full size, watching for a fist. */
   Open,
@@ -171,6 +183,48 @@ a fist is or is not registering. Leave off for a shipping build."
       }
     }
     return Math.min(0.99, best)
+  }
+
+  /**
+   * Where the nearest hand within `range` reaches of the sphere has to put its palm to crush it, or
+   * null with none. Pinching and pointing hands are left out: they are grabbing or poking.
+   */
+  crushGuide(range: number): CrushGuide | null {
+    if (this.phase !== CrushPhase.Open) {
+      return null
+    }
+
+    const reach = this.reach()
+    let guide: CrushGuide | null = null
+    let nearest = reach * range
+
+    for (let i = 0; i < AllHandTypes.length; i++) {
+      const handType = AllHandTypes[i]
+      if (this.allowedHand !== "either" && this.allowedHand !== handType) {
+        continue
+      }
+
+      const hand = SIK.HandInputData.getHand(handType)
+      if (hand === null || !hand.isTracked() || hand.isPinching() || isPointingPose(hand)) {
+        continue
+      }
+
+      const palm = hand.getPalmCenter()
+      if (palm === null) {
+        continue
+      }
+
+      const distance = this.distanceToSphere(palm)
+      if (distance > nearest) {
+        continue
+      }
+      nearest = distance
+
+      const centre = this.sphereReach !== null ? this.sphereReach.nearestPoint(palm) : this.getSceneObject().getTransform().getWorldPosition()
+      guide = {palm: palm, centre: centre, radius: reach, inside: distance <= reach}
+    }
+
+    return guide
   }
 
   onAwake(): void {
