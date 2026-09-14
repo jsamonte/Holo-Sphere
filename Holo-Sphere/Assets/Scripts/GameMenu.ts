@@ -118,7 +118,9 @@ const enum Stage {
  * The rhythm game picks each order at random from all five, so every order is equally likely.
  *
  * Music and voice each get their own AudioComponent so an order is never cut off by the sphere's
- * own sound effects, and the music bed runs underneath everything.
+ * own sound effects, and the music bed runs underneath everything. It dips to Duck Music To while any
+ * voice line plays - an order, an instruction, Good Job, or the Calibration panel's - and comes back
+ * up after, so nothing said is lost under the song.
  *
  * The sphere only exists while a run is going. It sits between the player and the menu, so its
  * grab volume would otherwise catch rays aimed at the buttons.
@@ -288,6 +290,21 @@ it) to 1 (as flat as PalmSquish goes)."
   @label("Voice Volume")
   @widget(new SliderWidget(0, 2, 0.05))
   voiceVolume: number = 1
+
+  @input
+  @label("Duck Music To")
+  @hint(
+    "How loud the music gets while a voice line plays, as a fraction of Music Volume, so every order \
+and instruction is heard clearly over the song. 1 never ducks."
+  )
+  @widget(new SliderWidget(0, 1, 0.05))
+  duckLevel: number = 0.4
+
+  @input
+  @label("Duck Fade (s)")
+  @hint("How long the music takes to dip under a voice line. It takes twice as long to come back up after.")
+  @widget(new SliderWidget(0.02, 1, 0.01))
+  duckFade: number = 0.15
 
   @input
   @label("Gap Before Instruction (s)")
@@ -531,6 +548,9 @@ slightly off the beat on device."
   /** What the music channel was last told to loop, so the menu song carries on from the leaderboard. */
   private musicTrack: AudioTrackAsset | null = null
 
+  /** How far the music is ducked right now: 1 at full Music Volume, down to Duck Music To under a voice. */
+  private duck = 1
+
   private board: GlobalLeaderboard | null = null
   private calibration: CalibrationMode | null = null
 
@@ -742,9 +762,30 @@ slightly off the beat on device."
         break
     }
 
+    this.updateDuck()
+
     // Snapshots refresh every frame regardless of stage, so an action taken before its order was
     // given cannot satisfy that order the instant it arrives.
     this.snapshotState()
+  }
+
+  /**
+   * Dips the music under every voice line - this menu's own, and the Calibration panel's - and brings
+   * it back up after, so what is being said is never lost under the song.
+   */
+  private updateDuck(): void {
+    if (this.music === null) {
+      return
+    }
+
+    const speaking =
+      (this.voice !== null && this.voice.isPlaying()) || (this.calibration !== null && this.calibration.isSpeaking)
+    const target = speaking ? Math.max(0, Math.min(1, this.duckLevel)) : 1
+    const fade = Math.max(0.01, target < this.duck ? this.duckFade : this.duckFade * 2)
+    const step = getDeltaTime() / fade
+
+    this.duck = target < this.duck ? Math.max(target, this.duck - step) : Math.min(target, this.duck + step)
+    this.music.volume = this.musicVolume * this.duck
   }
 
   private tickInstruction(): void {
@@ -1271,7 +1312,7 @@ slightly off the beat on device."
 
     this.stopMusic()
     this.music.audioTrack = track
-    this.music.volume = this.musicVolume
+    this.music.volume = this.musicVolume * this.duck
     this.music.play(-1)
     this.musicTrack = track
   }

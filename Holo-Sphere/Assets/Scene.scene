@@ -1761,6 +1761,8 @@
   ScriptAsset: !<reference> 8f43a077-24a3-4fab-84e3-de21dc584d76
   ScriptInputsDefault:
     voiceVolume: true
+    duckLevel: true
+    duckFade: true
     instructionGap: true
     repeatInstructionsAfter: true
     praiseGap: true
@@ -1815,6 +1817,8 @@
       compressDepth: 0.350000
       musicVolume: 0.197000
       voiceVolume: !<float> 1.000000
+      duckLevel: 0.400000
+      duckFade: 0.150000
       instructionGap: 0.300000
       repeatInstructionsAfter: !<float> 15.000000
       praiseGap: 1.200000

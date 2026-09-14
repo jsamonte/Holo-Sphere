@@ -231,6 +231,11 @@ export class CalibrationMode extends BaseScriptComponent {
     this.enterStep(Step.Hands)
   }
 
+  /** True while the panel is playing a voice line, so GameMenu can dip the music under it. */
+  get isSpeaking(): boolean {
+    return this.running && this.audio !== null && this.audio.isPlaying()
+  }
+
   /** Puts the panel away and hands every threshold back to the saved settings. */
   stop(): void {
     this.running = false
