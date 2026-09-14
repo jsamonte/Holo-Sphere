@@ -390,6 +390,7 @@
     - !<own> f73aae0a-197b-4a33-978f-14a8bacf6cee
   Components:
     - !<own> 04ac349b-f27f-4bec-8da7-c547984a8ffc
+    - !<own> e0df195b-de2c-41b2-819b-d154d3590880
 - !<SceneObject/0cc7c457-cf3b-43bd-a582-99ff560fba6f>
   PrefabRemaps:
     []
@@ -636,6 +637,38 @@
     - !<own> 9ea1fafe-fd0e-4f13-ad1b-3ad6995a8685
   Components:
     []
+- !<ScriptComponent/17d6df98-e2fc-4b19-ac7b-1dbf6b5857dd>
+  PrefabRemaps:
+    []
+  Name: MenuFollow
+  Enabled: true
+  ScriptAsset: !<reference> c4ade030-d191-4c19-ae8a-d91258b9fed3
+  ScriptInputsDefault:
+    distance: true
+    height: true
+    followAfter: true
+    turnAfter: true
+    glideTime: true
+    draggable: true
+    barWidth: true
+    barColor: true
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      distance: !<float> 70.000000
+      height: !<float> -10.000000
+      followAfter: !<float> 50.000000
+      turnAfter: !<float> 30.000000
+      glideTime: 0.500000
+      draggable: true
+      lineMaterial: !<reference.Material> a37127c0-ee7a-43de-94ef-d875fd9dc649
+      barWidth: !<float> 12.000000
+      barOffset: !<float> -29.000000
+      barColor: !<Vec4> {x: 0.000000, y: 0.950000, z: 1.000000, w: 1.000000}
+  ScriptTypes:
+    "":
+      {}
 - !<SceneObject/1829c206-cbb7-4909-bf42-afb9610be079>
   PrefabRemaps:
     []
@@ -1738,7 +1771,6 @@
     firstDownbeat: true
     beatsPerBar: true
     barsPerOrder: true
-    startDelay: true
     beatOffset: true
     mediumBeatsPerBar: true
     mediumBarsPerOrder: true
@@ -1793,21 +1825,21 @@
       firstDownbeat: 0.148000
       beatsPerBar: !<float> 4.000000
       barsPerOrder: !<float> 2.000000
-      startDelay: !<float> 7.000000
+      startDelay: !<float> 4.000000
       orderCount: !<float> 0.000000
       beatOffset: !<float> 0.000000
       mediumBpm: !<float> 136.000000
       mediumFirstDownbeat: 1.060000
       mediumBeatsPerBar: !<float> 4.000000
       mediumBarsPerOrder: !<float> 2.000000
-      mediumStartDelay: !<float> 3.000000
+      mediumStartDelay: !<float> 4.000000
       mediumOrderCount: !<float> 0.000000
       mediumBeatOffset: !<float> 0.000000
       hardBpm: !<float> 147.000000
-      hardFirstDownbeat: 1.863000
+      hardFirstDownbeat: 0.230000
       hardBeatsPerBar: !<float> 4.000000
       hardBarsPerOrder: 1.500000
-      hardStartDelay: !<float> 11.000000
+      hardStartDelay: !<float> 4.000000
       hardOrderCount: !<float> 0.000000
       hardBeatOffset: !<float> 0.000000
   ScriptTypes:
@@ -1883,6 +1915,7 @@
   Components:
     - !<own> f892f5b4-f054-421c-bcbe-43b14392f8c1
     - !<own> e0c3fc1b-4c90-422e-a93e-9f29cfdbe254
+    - !<own> 17d6df98-e2fc-4b19-ac7b-1dbf6b5857dd
 - !<SceneObject/782ef120-96a9-4c56-9799-7d37f0961e35>
   PrefabRemaps:
     []
@@ -3155,6 +3188,7 @@
     []
   Components:
     - !<own> 98dcbd73-f07b-4892-ba7c-ff6af0b226ee
+    - !<own> e9e06bd7-b4f8-4ba4-b74a-278e66a9f6eb
 - !<ScriptComponent/b065f53d-144a-457a-8a23-aa0ca86012f7>
   PrefabRemaps:
     []
@@ -4255,6 +4289,39 @@
   ScriptTypes:
     "":
       {}
+- !<ScriptComponent/e0df195b-de2c-41b2-819b-d154d3590880>
+  PrefabRemaps:
+    []
+  Name: MenuFollow
+  Enabled: true
+  ScriptAsset: !<reference> c4ade030-d191-4c19-ae8a-d91258b9fed3
+  ScriptInputsDefault:
+    distance: true
+    height: true
+    followAfter: true
+    turnAfter: true
+    glideTime: true
+    draggable: true
+    barWidth: true
+    barOffset: true
+    barColor: true
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      distance: !<float> 70.000000
+      height: !<float> -10.000000
+      followAfter: !<float> 50.000000
+      turnAfter: !<float> 30.000000
+      glideTime: 0.500000
+      draggable: true
+      lineMaterial: !<reference.Material> a37127c0-ee7a-43de-94ef-d875fd9dc649
+      barWidth: !<float> 12.000000
+      barOffset: !<float> -30.000000
+      barColor: !<Vec4> {x: 0.000000, y: 0.950000, z: 1.000000, w: 1.000000}
+  ScriptTypes:
+    "":
+      {}
 - !<SceneObject/e144c1d4-beac-42c2-a7e4-c915991fbb13>
   PrefabRemaps:
     []
@@ -4336,6 +4403,36 @@
     - !<own> d5f33c96-b961-4b91-95ed-037c8c4fbc90
   Components:
     []
+- !<ScriptComponent/e9e06bd7-b4f8-4ba4-b74a-278e66a9f6eb>
+  PrefabRemaps:
+    []
+  Name: MenuFollow
+  Enabled: true
+  ScriptAsset: !<reference> c4ade030-d191-4c19-ae8a-d91258b9fed3
+  ScriptInputsDefault:
+    followAfter: true
+    turnAfter: true
+    glideTime: true
+    draggable: true
+    barWidth: true
+    barColor: true
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      distance: !<float> 80.000000
+      height: !<float> 20.000000
+      followAfter: !<float> 50.000000
+      turnAfter: !<float> 30.000000
+      glideTime: 0.500000
+      draggable: true
+      lineMaterial: !<reference.Material> a37127c0-ee7a-43de-94ef-d875fd9dc649
+      barWidth: !<float> 12.000000
+      barOffset: -14.500000
+      barColor: !<Vec4> {x: 0.000000, y: 0.950000, z: 1.000000, w: 1.000000}
+  ScriptTypes:
+    "":
+      {}
 - !<SceneObject/ea051366-3281-47fd-aaba-1d061941ba6d>
   PrefabRemaps:
     []

@@ -1,5 +1,6 @@
 import {Interactable} from "../SpectaclesInteractionKit.lspkg/Components/Interaction/Interactable/Interactable"
 import {InteractorEvent} from "../SpectaclesInteractionKit.lspkg/Core/Interactor/InteractorEvent"
+import WorldCameraFinderProvider from "../SpectaclesInteractionKit.lspkg/Providers/CameraProvider/WorldCameraFinderProvider"
 import {CalibrationMode} from "./CalibrationMode"
 import {FingerPoke} from "./FingerPoke"
 import {CrushPhase, FistCrush} from "./FistCrush"
@@ -333,7 +334,7 @@ follows the Ending Sequence."
   @ui.separator
   @ui.label('<span style="color: #60A5FA;">Rhythm (Easy)</span>')
   @ui.label(
-    '<span style="color: #94A3B8; font-size: 11px;">Measured from the Easy song: 123 BPM, first downbeat at 0.148 s.</span>'
+    '<span style="color: #94A3B8; font-size: 11px;">Measured from the Easy song: 123 BPM, first downbeat at 0.148 s. After the 4 s silent intro the first order lands on the downbeat at 4.05 s.</span>'
   )
 
   @input
@@ -364,7 +365,7 @@ next one. 2 bars at 123 BPM is 3.9 s per order; 1 bar is 1.95 s."
   @label("Silent Intro (s)")
   @hint("No orders until this many seconds into the song. The first order is the first bar line after it.")
   @widget(new SliderWidget(0, 30, 0.5))
-  startDelay: number = 7
+  startDelay: number = 4
 
   @input
   @label("Orders To Win")
@@ -383,7 +384,7 @@ slightly off the beat on device."
   @ui.separator
   @ui.label('<span style="color: #60A5FA;">Rhythm (Medium)</span>')
   @ui.label(
-    '<span style="color: #94A3B8; font-size: 11px;">Measured from the Medium song, Fridays: 136 BPM, first downbeat at 1.060 s. After the 3 s silent intro the first order lands on the downbeat at 4.6 s.</span>'
+    '<span style="color: #94A3B8; font-size: 11px;">Measured from the Medium song, Fridays: 136 BPM, first downbeat at 1.060 s. After the 4 s silent intro the first order lands on the downbeat at 4.59 s.</span>'
   )
 
   @input
@@ -414,7 +415,7 @@ next one. 2 bars at 136 BPM is 3.5 s per order; 1 bar is 1.76 s."
   @label("Silent Intro (s)")
   @hint("No orders until this many seconds into the song. The first order is the first bar line after it.")
   @widget(new SliderWidget(0, 30, 0.5))
-  mediumStartDelay: number = 3
+  mediumStartDelay: number = 4
 
   @input
   @label("Orders To Win")
@@ -433,7 +434,7 @@ slightly off the beat on device."
   @ui.separator
   @ui.label('<span style="color: #60A5FA;">Rhythm (Hard)</span>')
   @ui.label(
-    '<span style="color: #94A3B8; font-size: 11px;">Measured from the Hard song, The Cutback: 147 BPM, first downbeat at 0.230 s. The grid starts one bar later so that after the 11 s silent intro the first order lands on the downbeat at 11.66 s. The drop is at 13.29 s.</span>'
+    '<span style="color: #94A3B8; font-size: 11px;">Measured from the Hard song, The Cutback: 147 BPM, first downbeat at 0.230 s. The grid starts on that downbeat, so after the 4 s silent intro the first order lands on beat 1 at 5.13 s. The drop is at 13.29 s.</span>'
   )
 
   @input
@@ -445,9 +446,10 @@ slightly off the beat on device."
   @label("First Downbeat (s)")
   @hint(
     "Seconds into the song file of the downbeat the order grid is counted from, in beats. Any downbeat \
-works; 1.863 s is one bar after the song's first, which puts the first order after the silent intro on beat 1."
+works; 0.230 s is the song's first, which puts the first order after the silent intro on beat 1. With 6 beats \
+between orders the grid alternates beats 1 and 3, so a grid a bar later would put it on beat 3 instead."
   )
-  hardFirstDownbeat: number = 1.863
+  hardFirstDownbeat: number = 0.23
 
   @input
   @label("Beats Per Bar")
@@ -468,7 +470,7 @@ of the bar and clearly faster than Medium's 3.5 s. 2 bars would be 3.3 s, every 
   @label("Silent Intro (s)")
   @hint("No orders until this many seconds into the song. The first order is the first bar line after it.")
   @widget(new SliderWidget(0, 30, 0.5))
-  hardStartDelay: number = 11
+  hardStartDelay: number = 4
 
   @input
   @label("Orders To Win")
@@ -540,8 +542,17 @@ slightly off the beat on device."
 
   private duplicateObject: SceneObject | null = null
 
-  /** Where the sphere sat when the lens started, so every run begins from the same place. */
+  /** Where the sphere sat when the lens started, the fallback start for every run. */
   private sphereHome: vec3 | null = null
+
+  /**
+   * How far in front of the player's eyes, and how far above them, the sphere sat when the lens
+   * started - where every run puts it back, relative to wherever the player now is.
+   */
+  private sphereDistance = 40
+  private sphereHeight = 0
+
+  private camera = WorldCameraFinderProvider.getInstance()
 
   // Previous-frame snapshots, so each order is satisfied by a fresh transition rather than by a
   // state that already happened to be true when the order was given.
@@ -574,6 +585,9 @@ slightly off the beat on device."
 
     if (this.sphere != null) {
       this.sphereHome = this.sphere.getTransform().getWorldPosition()
+      const offset = this.sphereHome.sub(this.camera.getWorldPosition())
+      this.sphereDistance = Math.max(10, new vec3(offset.x, 0, offset.z).length)
+      this.sphereHeight = offset.y
     }
 
     this.music = this.getSceneObject().createComponent("Component.AudioComponent") as AudioComponent
@@ -649,7 +663,7 @@ slightly off the beat on device."
     this.showMenu(false)
     this.playMusic(this.calibrationMusic != null ? this.calibrationMusic : this.tutorialMusic)
     this.stage = Stage.Calibrating
-    this.calibration.start(() => this.finishCalibration())
+    this.calibration.start(() => this.finishCalibration(), this.sphereStart())
   }
 
   private finishCalibration(): void {
@@ -1214,11 +1228,35 @@ slightly off the beat on device."
     }
   }
 
-  /** Puts the sphere back where the lens started, so a run never begins with it out of reach. */
+  /** Puts the sphere where a run starts, so a run never begins with it out of reach. */
   private resetSphere(): void {
-    if (this.sphere != null && this.sphereHome !== null) {
-      this.sphere.getTransform().setWorldPosition(this.sphereHome)
+    const start = this.sphereStart()
+    if (this.sphere != null && start !== null) {
+      this.sphere.getTransform().setWorldPosition(start)
     }
+  }
+
+  /**
+   * Where the sphere sat when the lens started, relative to the player: the same distance in front
+   * of their eyes and the same height, towards the menu they have just pressed. The menu follows the
+   * player about, so the lens's starting spot in the room could by now be anywhere.
+   */
+  private sphereStart(): vec3 | null {
+    if (this.sphereHome === null) {
+      return null
+    }
+    if (this.menuRoot == null) {
+      return this.sphereHome
+    }
+
+    const eye = this.camera.getWorldPosition()
+    const toMenu = this.menuRoot.getTransform().getWorldPosition().sub(eye)
+    const flat = new vec3(toMenu.x, 0, toMenu.z)
+    if (flat.length < 1) {
+      return this.sphereHome
+    }
+
+    return eye.add(flat.normalize().uniformScale(this.sphereDistance)).add(vec3.up().uniformScale(this.sphereHeight))
   }
 
   private playMusic(track: AudioTrackAsset | null): void {

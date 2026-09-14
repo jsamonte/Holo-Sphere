@@ -10,7 +10,7 @@ import {PalmSquish, SquishPhase} from "./PalmSquish"
 import {newBuilder, outline, quad} from "./RetroMenuStyle"
 import {SphereReach} from "./SphereReach"
 import {TwoHandSplit} from "./TwoHandSplit"
-import {VelocityTracker, YoyoFlick} from "./YoyoFlick"
+import {YoyoFlick} from "./YoyoFlick"
 
 enum Step {
   Hands,
@@ -181,7 +181,6 @@ export class CalibrationMode extends BaseScriptComponent {
   private lastSquish: SquishPhase = SquishPhase.Idle
   private wasPoked = false
 
-  private pinchTrackers = new Map<string, VelocityTracker>()
   private recentDepths: {time: number; depth: number}[] = []
 
   private yoyo: YoyoFlick | null = null
@@ -209,9 +208,16 @@ export class CalibrationMode extends BaseScriptComponent {
     this.createEvent("UpdateEvent").bind(() => this.onUpdate())
   }
 
-  /** Brings the panel up and starts from the hand size. `onDone` hears Done or Exit. */
-  start(onDone: () => void): void {
+  /**
+   * Brings the panel up and starts from the hand size. `onDone` hears Done or Exit. `sphereHome` is
+   * where the sphere goes back to between gestures - where the run placed it - or, left out, where it
+   * sat when the lens started.
+   */
+  start(onDone: () => void, sphereHome: vec3 | null = null): void {
     this.onDone = onDone
+    if (sphereHome !== null) {
+      this.sphereHome = sphereHome
+    }
     this.getSceneObject().enabled = true
     this.build()
 
@@ -330,7 +336,6 @@ export class CalibrationMode extends BaseScriptComponent {
       return
     }
 
-    this.trackPinchSpeeds()
     this.trackTipDepth()
 
     if (this.resultTimer > 0) {
@@ -381,8 +386,9 @@ export class CalibrationMode extends BaseScriptComponent {
   }
 
   /**
-   * An attempt is one pinch of the sphere, measured by the pinching hand's own speed - which carries
-   * on past the moment the sphere leaves the hand, so the whole swing is caught.
+   * An attempt is one pinch of the sphere, measured on the very speed YoyoFlick judges a flick on -
+   * the faster of the sphere and the pinching hand - carried on past the moment the sphere leaves the
+   * hand, so the whole swing is caught.
    */
   private updateYoyo(): void {
     if (this.yoyo === null) {
@@ -401,7 +407,7 @@ export class CalibrationMode extends BaseScriptComponent {
       return
     }
 
-    this.attemptPeak = Math.max(this.attemptPeak, this.pinchingHandSpeed())
+    this.attemptPeak = Math.max(this.attemptPeak, this.yoyo.measuredSpeed())
     if (held) {
       return
     }
@@ -526,8 +532,9 @@ export class CalibrationMode extends BaseScriptComponent {
 
     switch (this.step) {
       case Step.Yoyo: {
+        // Never above Flick Speed itself: calibration only ever makes the flick easier.
         const base = this.yoyo!.flickSpeed
-        const speed = clamp(typical * 0.6, base * 0.5, base * 1.5)
+        const speed = clamp(typical * 0.6, base * 0.5, base)
         tuning.setCalibrated("flickSpeed", speed)
         this.completeStep("FLICK AT " + Math.round(speed) + " CM/S")
         break
@@ -581,45 +588,6 @@ export class CalibrationMode extends BaseScriptComponent {
     this.lastCrush = this.crush !== null ? this.crush.crushPhase : CrushPhase.Open
     this.lastSquish = this.squish !== null ? this.squish.squishPhase : SquishPhase.Idle
     this.wasPoked = this.poke !== null && this.poke.isPoked
-  }
-
-  /** Feeds each hand's pinch point - midway between index and thumb tips - into its speed tracker. */
-  private trackPinchSpeeds(): void {
-    const now = getTime()
-    for (let i = 0; i < AllHandTypes.length; i++) {
-      const handType = AllHandTypes[i]
-      let tracker = this.pinchTrackers.get(handType)
-      if (tracker === undefined) {
-        tracker = new VelocityTracker()
-        this.pinchTrackers.set(handType, tracker)
-      }
-
-      const hand = SIK.HandInputData.getHand(handType)
-      const index = hand !== null && hand.isTracked() ? hand.indexTip?.position : null
-      const thumb = hand !== null && hand.isTracked() ? hand.thumbTip?.position : null
-      if (index == null || thumb == null) {
-        tracker.reset()
-        continue
-      }
-      tracker.add(index.add(thumb).uniformScale(0.5), now)
-    }
-  }
-
-  /** The fastest hand that is pinching, or all but pinching. */
-  private pinchingHandSpeed(): number {
-    let best = 0
-    for (let i = 0; i < AllHandTypes.length; i++) {
-      const hand = SIK.HandInputData.getHand(AllHandTypes[i])
-      const tracker = this.pinchTrackers.get(AllHandTypes[i])
-      if (hand === null || tracker === undefined || !hand.isTracked()) {
-        continue
-      }
-      if (!hand.isPinching() && (hand.getPinchStrength() ?? 0) < 0.5) {
-        continue
-      }
-      best = Math.max(best, tracker.velocity().length)
-    }
-    return best
   }
 
   /** Remembers the deepest pointing fingertip each frame, for {@link recentDeepest}. */

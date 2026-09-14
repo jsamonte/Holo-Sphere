@@ -17,6 +17,12 @@ const VELOCITY_WINDOW = 0.1
 const ARM_DELAY = 0.15
 
 /**
+ * Seconds after a throw that the hand's speed still counts towards {@link YoyoFlick.measuredSpeed}:
+ * the swing carries on after the sphere has left the hand.
+ */
+const MEASURE_TAIL = 0.25
+
+/**
  * How much of the hand's motion has to oppose the throw direction to count as calling the
  * sphere home. Slightly negative rather than zero so a hand drifting sideways does not
  * accidentally trip the return.
@@ -132,12 +138,13 @@ export class YoyoFlick extends BaseScriptComponent {
   throwDistance: number = 200
 
   /**
-   * How fast the pinched sphere has to be moving for the motion to read as a flick rather than
-   * a drag. Lower is easier to trigger, but starts firing on ordinary hand movement.
+   * How fast the pinched sphere, or the hand pinching it, has to be moving for the motion to read
+   * as a flick rather than a drag. Lower is easier to trigger, but starts firing on ordinary hand
+   * movement. GestureTuning can make it easier for a player, never harder.
    */
   @input
   @label("Flick Speed (cm/s)")
-  @hint("How fast the pinched sphere has to move to count as a flick. Lower triggers more easily.")
+  @hint("How fast the pinched sphere, or the hand pinching it, has to move to count as a flick. Lower triggers more easily.")
   @widget(new SliderWidget(20, 300, 5))
   flickSpeed: number = 90
 
@@ -309,7 +316,7 @@ Releasing the pinch always returns it."
       return
     }
 
-    const velocity = this.sphereTracker.velocity()
+    const velocity = this.flickVelocity()
     if (velocity.length >= this.flickThreshold()) {
       this.throwOut(velocity)
     }
@@ -375,8 +382,10 @@ Releasing the pinch always returns it."
     this.heldTime = 0
 
     // The flight was script-driven, so the position history describes the flight rather than the
-    // hand. Starting clean stops a fast return from immediately reading as a new flick.
+    // hand. Starting clean stops a fast return from immediately reading as a new flick - and the
+    // hand's history holds the tug that called it back, which must not read as one either.
     this.sphereTracker.reset()
+    this.handTracker.reset()
 
     // Skipped while suspended: something else is driving the transform, and handing translation
     // back to the manipulation now would have the two of them fighting over it.
@@ -517,12 +526,38 @@ Releasing the pinch always returns it."
     if (this.state !== YoyoState.Held || this.heldTime < ARM_DELAY) {
       return 0
     }
-    return Math.min(0.99, this.sphereTracker.velocity().length / Math.max(1, this.flickThreshold()))
+    return Math.min(0.99, this.flickVelocity().length / Math.max(1, this.flickThreshold()))
+  }
+
+  /**
+   * The speed a flick is judged on, for CalibrationMode to measure: while in hand, the one compared
+   * with Flick Speed; for a moment after a throw, the hand's own, since the swing carries on after
+   * the sphere has left it. 0 otherwise.
+   */
+  measuredSpeed(): number {
+    if (this.state === YoyoState.Held) {
+      return this.flickVelocity().length
+    }
+    if (this.state === YoyoState.Throwing && this.flightTime <= MEASURE_TAIL) {
+      return this.handTracker.velocity().length
+    }
+    return 0
   }
 
   /** Flick Speed, scaled to the player by GestureTuning. */
   private flickThreshold(): number {
     return tuned(Tune.FlickSpeed, this.flickSpeed)
+  }
+
+  /**
+   * The faster of the sphere and the hand pinching it. The sphere follows the hand through the
+   * manipulation's smoothing, which takes the edge off a quick flick, so the hand's own speed counts
+   * as well.
+   */
+  private flickVelocity(): vec3 {
+    const sphere = this.sphereTracker.velocity()
+    const hand = this.handTracker.velocity()
+    return hand.length > sphere.length ? hand : sphere
   }
 
   private getPinchPoint(): vec3 | null {

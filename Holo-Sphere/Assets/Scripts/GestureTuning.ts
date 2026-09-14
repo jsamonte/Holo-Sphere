@@ -30,18 +30,20 @@ interface Rule {
   handScaled: boolean
   /** Name the calibrated value is saved under, or null for thresholds calibration does not measure. */
   calibrated: string | null
+  /** Never harder than the Inspector value, whatever sensitivity, hand size or calibration say. */
+  neverHarder: boolean
 }
 
 const RULES: Rule[] = []
-RULES[Tune.FlickSpeed] = {kind: Kind.Bar, handScaled: true, calibrated: "flickSpeed"}
-RULES[Tune.ReturnFlickSpeed] = {kind: Kind.Bar, handScaled: true, calibrated: null}
-RULES[Tune.SplitTravel] = {kind: Kind.Bar, handScaled: true, calibrated: "splitTravel"}
-RULES[Tune.SecondHandReach] = {kind: Kind.Zone, handScaled: true, calibrated: null}
-RULES[Tune.SquishReach] = {kind: Kind.Zone, handScaled: true, calibrated: "squishReach"}
-RULES[Tune.PalmPadding] = {kind: Kind.Size, handScaled: true, calibrated: null}
-RULES[Tune.CrushRadius] = {kind: Kind.Zone, handScaled: true, calibrated: "crushRadius"}
-RULES[Tune.PokeDepth] = {kind: Kind.Bar, handScaled: false, calibrated: "pokeDepth"}
-RULES[Tune.PokeDelay] = {kind: Kind.Bar, handScaled: false, calibrated: null}
+RULES[Tune.FlickSpeed] = {kind: Kind.Bar, handScaled: true, calibrated: "flickSpeed", neverHarder: true}
+RULES[Tune.ReturnFlickSpeed] = {kind: Kind.Bar, handScaled: true, calibrated: null, neverHarder: true}
+RULES[Tune.SplitTravel] = {kind: Kind.Bar, handScaled: true, calibrated: "splitTravel", neverHarder: false}
+RULES[Tune.SecondHandReach] = {kind: Kind.Zone, handScaled: true, calibrated: null, neverHarder: false}
+RULES[Tune.SquishReach] = {kind: Kind.Zone, handScaled: true, calibrated: "squishReach", neverHarder: false}
+RULES[Tune.PalmPadding] = {kind: Kind.Size, handScaled: true, calibrated: null, neverHarder: false}
+RULES[Tune.CrushRadius] = {kind: Kind.Zone, handScaled: true, calibrated: "crushRadius", neverHarder: false}
+RULES[Tune.PokeDepth] = {kind: Kind.Bar, handScaled: false, calibrated: "pokeDepth", neverHarder: false}
+RULES[Tune.PokeDelay] = {kind: Kind.Bar, handScaled: false, calibrated: null, neverHarder: false}
 
 /** Everything kept on the headset between sessions. */
 interface Saved {
@@ -92,6 +94,8 @@ export function tuned(tune: Tune, base: number): number {
  *   a threshold for it, which replaces the Inspector value from then on.
  * - **Sensitivity.** Set here for everyone, never by the player, scaling every threshold together:
  *   Low needs bigger movements, High smaller ones.
+ * - **Never harder.** The yoyo's flick and return speeds only ever come out easier than their
+ *   Inspector values, whatever sensitivity, hand size or calibration would make of them.
  * - **Hints.** Whether GestureCues shows its rings and dots during play.
  *
  * Put one on any object that is always enabled. Scripts reach it through {@link tuned}.
@@ -192,6 +196,11 @@ export class GestureTuning extends BaseScriptComponent {
       value *= factor
     } else if (rule.kind === Kind.Zone) {
       value /= factor
+    }
+
+    // Some gestures only ever get easier: their Inspector value is the hardest they can be.
+    if (rule.neverHarder) {
+      value = rule.kind === Kind.Zone ? Math.max(value, base) : Math.min(value, base)
     }
     return value
   }

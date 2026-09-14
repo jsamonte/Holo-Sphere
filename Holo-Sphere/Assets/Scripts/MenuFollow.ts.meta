@@ -1,0 +1,77 @@
+- !<AssetImportMetadata/fe08d711-dc36-40cf-8bce-e6a13af2c0fa>
+  ImportedAssetIds:
+    TypeScriptAsset: !<reference> c4ade030-d191-4c19-ae8a-d91258b9fed3
+  ImporterName: TypeScriptAssetImporter
+  PrimaryAsset: !<reference> c4ade030-d191-4c19-ae8a-d91258b9fed3
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    TypeScriptAsset: !<own> ffd4b681-5018-4441-b344-10fdcdae002f
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<TypeScriptAssetData/ffd4b681-5018-4441-b344-10fdcdae002f>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: ddf8060b-d991-47fb-96e7-1be5463f1922
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    barColor: false
+    barOffset: false
+    barWidth: false
+    distance: false
+    draggable: false
+    followAfter: false
+    glideTime: false
+    height: false
+    lineMaterial: false
+    turnAfter: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - distance: !<float> 70.000000
+      height: !<float> -10.000000
+      followAfter: !<float> 50.000000
+      turnAfter: !<float> 30.000000
+      glideTime: 0.500000
+      draggable: true
+      lineMaterial: !<reference.Material> 00000000-0000-0000-0000-000000000000
+      barWidth: !<float> 12.000000
+      barOffset: !<float> -30.000000
+      barColor: !<Vec4> {x: 0.000000, y: 0.950000, z: 1.000000, w: 1.000000}
+  ScriptTypes:
+    -
+      {}
+  InputLines:
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Placement</span>"}'
+    - '// @input float distance = 70 {"label":"Distance (cm)", "hint":"How far in front of the player the panel sits, until they drag it somewhere else.", "widget":"slider", "min":35, "max":200, "step":1}'
+    - "// @input float height = -10 {\"label\":\"Height (cm)\", \"hint\":\"How far above (+) or below (-) the player's eyes the panel sits, until they drag it somewhere else.\", \"widget\":\"slider\", \"min\":-60, \"max\":60, \"step\":1}"
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Follow</span>"}'
+    - '// @input float followAfter = 50 {"label":"Follow After (cm)", "hint":"How far the player can move from where the panel should be before it glides after them.", "widget":"slider", "min":10, "max":200, "step":5}'
+    - "// @input float turnAfter = 30 {\"label\":\"Turn After (deg)\", \"hint\":\"How far round to the panel's side the player can move before it turns to face them.\", \"widget\":\"slider\", \"min\":5, \"max\":90, \"step\":1}"
+    - '// @input float glideTime = 0.5 {"label":"Glide Time (s)", "hint":"Roughly how long a glide or turn takes.", "widget":"slider", "min":0.1, "max":2, "step":0.05}'
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"label", "label":"<span style=\"color: #60A5FA;\">Grab Bar</span>"}'
+    - '// @input bool draggable = true {"label":"Draggable", "hint":"Show a grab bar under the panel that moves it with a pinch."}'
+    - '// @input Asset.Material lineMaterial {"label":"Line Material", "hint":"Unlit material the grab bar is drawn with. Assets/Neon Line.mat, the same as the menus."}'
+    - '// @input float barWidth = 12 {"label":"Bar Width (cm)", "widget":"slider", "min":4, "max":40, "step":0.5}'
+    - "// @input float barOffset = -30 {\"label\":\"Bar Height (cm)\", \"hint\":\"Where the grab bar sits, up from the panel's centre. Negative puts it below.\", \"widget\":\"slider\", \"min\":-60, \"max\":60, \"step\":0.5}"
+    - '// @input vec4 barColor = "{0, 0.95, 1, 1}" {"label":"Bar Colour", "widget":"color"}'
