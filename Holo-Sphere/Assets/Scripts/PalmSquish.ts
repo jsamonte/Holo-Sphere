@@ -18,6 +18,20 @@ export enum SquishPhase {
   Recovering
 }
 
+/** Where the two palms have to go to squish the sphere, for GestureCues to draw. Left, then right. */
+export interface CompressGuide {
+  /** Each palm's centre. */
+  palms: vec3[]
+  /** Whether each palm is open and close enough to the sphere to start a squish. */
+  ready: boolean[]
+  /** Where each palm's centre should be, either side of the sphere. */
+  targets: vec3[]
+  /** The palms are where they need to be: a squish is about to start, or - while squishing - is deep enough. */
+  reached: boolean
+  /** A squish is under way, and the targets mark how far in to press. */
+  pressing: boolean
+}
+
 /** Where the two palms are, as far as the squish is concerned. */
 interface PalmPair {
   /** Space between the palms' skin, in world units. */
@@ -214,6 +228,79 @@ is or is not starting. Leave off for a shipping build."
   /** Reach, scaled to the player by GestureTuning. */
   private reachRadii(): number {
     return tuned(Tune.SquishReach, this.reach)
+  }
+
+  /**
+   * Where the palms have to go, while two open hands are within `range` reaches of the sphere or are
+   * squishing it. Before a squish the targets are where the palms start one; during it, where they
+   * have pressed the sphere `depthTarget` of the way flat - 0 round to 1 as flat as it goes. Null
+   * with no such pair of hands, or while the sphere is busy with another move.
+   */
+  compressGuide(range: number, depthTarget: number): CompressGuide | null {
+    const pressing = this.phase === SquishPhase.Squishing
+    if (!pressing && this.isBusy()) {
+      return null
+    }
+
+    const left = SIK.HandInputData.getHand("left")
+    const right = SIK.HandInputData.getHand("right")
+    if (!this.openHand(left, pressing) || !this.openHand(right, pressing)) {
+      return null
+    }
+
+    const a = left.getPalmCenter()
+    const b = right.getPalmCenter()
+    if (a === null || b === null) {
+      return null
+    }
+
+    const span = a.distance(b)
+    if (span < 0.001) {
+      return null
+    }
+    const axis = b.sub(a).uniformScale(1 / span)
+    const padding = tuned(Tune.PalmPadding, this.palmPadding)
+
+    if (pressing) {
+      const squash = clamp(1 - depthTarget * (1 - this.flattest), this.flattest, 1)
+      const half = (this.diameter() * squash) / 2 + padding
+      const centre = this.getTransform().getWorldPosition()
+      return {
+        palms: [a, b],
+        ready: [true, true],
+        targets: [centre.sub(axis.uniformScale(half)), centre.add(axis.uniformScale(half))],
+        reached: this.squishAmount >= depthTarget,
+        pressing: true
+      }
+    }
+
+    const middle = a.add(b).uniformScale(0.5)
+    const centre = this.sphereReach !== null ? this.sphereReach.nearestPoint(middle) : this.getTransform().getWorldPosition()
+    const reach = this.radius() * this.reachRadii()
+    if (a.distance(centre) > reach * range || b.distance(centre) > reach * range) {
+      return null
+    }
+
+    // Where a squish starts: the palms' skin no further apart than the sphere is wide, as in tryStart.
+    const startGap = this.diameter() * 1.1
+    const half = startGap / 2 + padding
+    const ready = [this.palmUsable(left, false) && a.distance(centre) <= reach, this.palmUsable(right, false) && b.distance(centre) <= reach]
+
+    return {
+      palms: [a, b],
+      ready: ready,
+      targets: [centre.sub(axis.uniformScale(half)), centre.add(axis.uniformScale(half))],
+      reached: ready[0] && ready[1] && span - padding * 2 <= startGap,
+      pressing: false
+    }
+  }
+
+  /** Tracked and not a fist - nor, before a squish, pinching, which is a grab. */
+  private openHand(hand: TrackedHand, pressing: boolean): boolean {
+    if (hand === null || !hand.isTracked() || hand.palmState === PalmState.Closed) {
+      return false
+    }
+    return pressing || !hand.isPinching()
   }
 
   onAwake(): void {

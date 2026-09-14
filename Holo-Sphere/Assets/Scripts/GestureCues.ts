@@ -21,8 +21,11 @@ const DOT_RANGE = 3
 /** How far out, as a multiple of the crush zone, an open hand brings up the collapse guide. */
 const GUIDE_RANGE = 1.8
 
-/** Compress progress from which two open palms are taken to be setting up a compress, not a collapse. */
-const COMPRESS_SETUP = 0.6
+/** How far out, as a multiple of the squish reach, two open palms bring up the compress guide. */
+const COMPRESS_RANGE = 1.6
+
+/** Radius, in cm, of the rings marking where each palm should press. About half a palm across. */
+const PAD_RADIUS = 3
 
 /** How much the crush zone may change size before its ring is rebuilt to match. */
 const ZONE_REBUILD = 0.05
@@ -73,8 +76,12 @@ function ringMesh(radius: number, thickness: number): MeshBuilder {
  *   is looking for.
  * - **Collapse guide.** With an open hand near the sphere, a ring marks the zone the palm has to be
  *   inside for a fist to crush it, and a dot on the palm turns from pink to cyan once it is - so the
- *   player knows where to close their hand. Two open palms at the sphere are setting up a compress,
- *   and get no guide.
+ *   player knows where to close their hand.
+ * - **Compress guide.** With both hands open near the sphere, a ring either side of it marks where
+ *   each palm has to be for a squish to start, and a dot on each palm turns from pink to cyan once
+ *   that hand is open and close enough. All of it turns white as the squish is about to start. While
+ *   squishing, the rings move in to show how flat Compress It needs the sphere, and turn white once
+ *   it is. It takes the collapse guide's place, since two open palms at the sphere are a compress.
  *
  * Every gesture script works out its own progress, so the ring always agrees with what will count.
  * Shown whenever GestureTuning's Hints are on, and always during calibration. Put this on the sphere
@@ -179,6 +186,18 @@ export class GestureCues extends BaseScriptComponent {
   private palmDot: SceneObject | null = null
   private palmMaterial: Material | null = null
 
+  /** Compress guide: where each palm should press, and a dot on each palm - left, then right. */
+  private pads: SceneObject[] = []
+  private padMaterials: Material[] = []
+  private compressPalms: SceneObject[] = []
+  private compressPalmMaterials: Material[] = []
+
+  /**
+   * How flat, from 0 to 1, the sphere has to be pressed for Compress It to count. GameMenu sets it
+   * to its own Compress Depth, so the compress guide marks the target the game actually checks.
+   */
+  compressTarget = 0.35
+
   private shownSegments = -1
   private opacity = 0
   private lastCue: Cue = {name: "", progress: 0}
@@ -259,6 +278,20 @@ export class GestureCues extends BaseScriptComponent {
     this.palmMaterial = addVisual(palmDot, palmMesh, newLineMaterial(this.lineMaterial!))
     this.palmDot = palmDot
 
+    for (let i = 0; i < 2; i++) {
+      const pad = global.scene.createSceneObject("Compress Guide Pad")
+      pad.layer = layer
+      this.padMaterials.push(addVisual(pad, ringMesh(PAD_RADIUS, this.ringThickness), newLineMaterial(this.lineMaterial!)))
+      this.pads.push(pad)
+
+      const mesh = newBuilder()
+      quad(mesh, -palmHalf, -palmHalf, palmHalf, palmHalf)
+      const palm = global.scene.createSceneObject("Compress Guide Palm")
+      palm.layer = layer
+      this.compressPalmMaterials.push(addVisual(palm, mesh, newLineMaterial(this.lineMaterial!)))
+      this.compressPalms.push(palm)
+    }
+
     this.hideAll()
   }
 
@@ -275,7 +308,55 @@ export class GestureCues extends BaseScriptComponent {
 
     this.updateRing()
     this.updateDot(wanted)
-    this.updateCollapseGuide(wanted)
+    // Two open palms at the sphere are setting up a compress, so they get its guide rather than collapse's.
+    const compressing = this.updateCompressGuide(wanted)
+    this.updateCollapseGuide(wanted && !compressing)
+  }
+
+  /**
+   * With both hands open near the sphere, or squishing it: a ring either side marking where each palm
+   * should press, and a dot on each palm. Returns whether it is showing.
+   */
+  private updateCompressGuide(wanted: boolean): boolean {
+    const guide = wanted && this.squish !== null ? this.squish.compressGuide(COMPRESS_RANGE, this.compressTarget) : null
+
+    for (let i = 0; i < this.pads.length; i++) {
+      const pad = this.pads[i]
+      const palm = this.compressPalms[i]
+
+      if (guide === null) {
+        pad.enabled = false
+        palm.enabled = false
+        continue
+      }
+
+      pad.enabled = true
+      this.placeFacingCamera(pad, guide.targets[i], 0)
+      if (guide.reached) {
+        tint(this.padMaterials[i], this.readyColor, 0.9)
+      } else {
+        tint(this.padMaterials[i], this.ringColor, guide.pressing || guide.ready[i] ? 0.7 : 0.3)
+      }
+
+      palm.enabled = true
+      this.placeFacingCamera(palm, guide.palms[i], 1.5)
+      if (guide.reached) {
+        tint(this.compressPalmMaterials[i], this.readyColor, 0.9)
+      } else {
+        tint(this.compressPalmMaterials[i], guide.pressing || guide.ready[i] ? this.ringColor : this.dotColor, 0.9)
+      }
+    }
+
+    return guide !== null
+  }
+
+  /** Puts `target` at `position`, nudged `lift` cm towards the player and turned to face them. */
+  private placeFacingCamera(target: SceneObject, position: vec3, lift: number): void {
+    const toCamera = this.camera.getWorldPosition().sub(position)
+    const offset = lift > 0 && toCamera.length > 0.0001 ? toCamera.normalize().uniformScale(lift) : vec3.zero()
+    const transform = target.getTransform()
+    transform.setWorldPosition(position.add(offset))
+    transform.setWorldRotation(this.facingCamera(position))
   }
 
   /**
@@ -289,8 +370,7 @@ export class GestureCues extends BaseScriptComponent {
       return
     }
 
-    const settingUpCompress = this.squish !== null && this.squish.compressProgress >= COMPRESS_SETUP
-    const guide = wanted && !settingUpCompress && this.crush !== null ? this.crush.crushGuide(GUIDE_RANGE) : null
+    const guide = wanted && this.crush !== null ? this.crush.crushGuide(GUIDE_RANGE) : null
 
     if (guide === null) {
       zone.enabled = false
@@ -473,6 +553,10 @@ export class GestureCues extends BaseScriptComponent {
     }
     if (this.palmDot !== null) {
       this.palmDot.enabled = false
+    }
+    for (let i = 0; i < this.pads.length; i++) {
+      this.pads[i].enabled = false
+      this.compressPalms[i].enabled = false
     }
   }
 }

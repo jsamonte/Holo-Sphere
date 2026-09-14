@@ -3,6 +3,7 @@ import {InteractorEvent} from "../SpectaclesInteractionKit.lspkg/Core/Interactor
 import {CalibrationMode} from "./CalibrationMode"
 import {FingerPoke} from "./FingerPoke"
 import {CrushPhase, FistCrush} from "./FistCrush"
+import {GestureCues} from "./GestureCues"
 import {GlobalLeaderboard} from "./GlobalLeaderboard"
 import {PalmSquish, SquishPhase} from "./PalmSquish"
 import {TwoHandSplit} from "./TwoHandSplit"
@@ -564,6 +565,12 @@ slightly off the beat on device."
     this.crush = owner.getComponent(FistCrush.getTypeName()) as FistCrush
     this.squish = owner.getComponent(PalmSquish.getTypeName()) as PalmSquish
     this.poke = owner.getComponent(FingerPoke.getTypeName()) as FingerPoke
+
+    // The compress guide marks how flat Compress It needs the sphere, which is set here.
+    const cues = owner.getComponent(GestureCues.getTypeName()) as GestureCues
+    if (cues !== null) {
+      cues.compressTarget = this.compressDepth
+    }
 
     if (this.sphere != null) {
       this.sphereHome = this.sphere.getTransform().getWorldPosition()
